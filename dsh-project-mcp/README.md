@@ -66,7 +66,7 @@ agent/created ──► 会话 cwd ──► 向上找 .mcp.json（止于含 .gi
                     └─ await agent.ctx.plugin(McpClient, config)   ← 挂进该 agent 的 scope
 ```
 
-宿主侧依据（`@deepseek-ai/dsh` 0.1.7-alpha.2 实测）：
+宿主侧依据（`@deepseek-ai/dsh` 0.2.1-alpha.4 实测）：
 
 - `dsh-acp` 就是这么干的：`for (const config of configs) await agentCtx.plugin(McpClient, config)`。
 - `agent/created` 在 `agents.create()` 内部被 await（`dsh-agent-loop` 的 `publish()` → `await agents.announce(...)`），所以监听器里的异步挂载会挡在会话创建完成之前。
