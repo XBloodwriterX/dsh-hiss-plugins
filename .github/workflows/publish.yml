@@ -2,6 +2,7 @@ name: publish
 
 # 推一个 <目录名>@<版本> tag（例如 dsh-hiss-plugins@1.0.0）就发布这一个包。
 # tag 必须与 <目录名>/package.json 的 version 逐字一致，否则在发布前失败。
+# 该版本已存在于 registry 时跳过发布（幂等），其余步骤照跑。
 # 手工重跑（tag 已存在、或上一次跑挂了）：gh workflow run publish.yml --ref <tag>
 on:
   push:
@@ -47,8 +48,24 @@ jobs:
       - name: 测试
         run: pnpm test
 
+      # 幂等：该版本已经在 registry 上就跳过发布 —— 重推 tag、或把 tag 指到同一份内容的
+      # 新提交时都不会红。判断只用 registry 的公开读，不需要任何凭据。
+      - name: 检查该版本是否已发布
+        id: published
+        shell: bash
+        run: |
+          name="${{ steps.target.outputs.name }}"
+          version="${{ steps.target.outputs.version }}"
+          if npm view "$name@$version" version >/dev/null 2>&1; then
+            echo "already=true" >> "$GITHUB_OUTPUT"
+            echo "$name@$version 已在 registry 上，跳过发布。"
+          else
+            echo "already=false" >> "$GITHUB_OUTPUT"
+          fi
+
       # npm 在这里用 GitHub 的 OIDC token 换取一次性发布凭据，并自动生成 provenance。
       # 包内 prepublishOnly 还会再跑一次该包自己的测试。
       - name: 发布 ${{ steps.target.outputs.name }}
+        if: steps.published.outputs.already == 'false'
         working-directory: ${{ steps.target.outputs.dir }}
         run: npm publish
