@@ -36,6 +36,9 @@ jobs:
 
       - name: 解析 tag 指向的包
         id: target
+        # Windows runner 的默认 shell 是 PowerShell，$GITHUB_REF_NAME 会被当成未定义的
+        # PS 变量解析成空串 —— 这一步显式用 bash（runner 自带 Git Bash）。
+        shell: bash
         run: node scripts/resolve-tag.mjs "$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
 
       - name: 安装依赖
