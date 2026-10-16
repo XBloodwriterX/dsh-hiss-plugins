@@ -29,11 +29,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 /** Installed as profile dependencies; everything else arrives transitively. */
-const PLUGINS = ["dsh-ponytail", "dsh-colgrep", "dsh-codegraph", "dsh-project-mcp", "dsh-gitbash", "dsh-taste-skill", "dsh-superpowers"];
-/** The library the skill plugins depend on, satisfied from a local tarball instead of the registry. */
-const LIBRARY = "dsh-skill-kit";
-/** Every packed package, library first. */
-const PACKAGES = [LIBRARY, ...PLUGINS];
+const PLUGINS = ["dsh-colgrep", "dsh-codegraph", "dsh-project-mcp", "dsh-gitbash"];
 const PROFILE = "smoke";
 const BOOT_TIMEOUT_MS = 120_000;
 const SESSION_TIMEOUT_MS = 90_000;
@@ -189,10 +185,10 @@ mkdirSync(tarballs, { recursive: true });
 mkdirSync(profileDir, { recursive: true });
 
 try {
-	step(`packing ${PACKAGES.length} packages`);
+	step(`packing ${PLUGINS.length} packages`);
 	/** @type {Map<string, string>} package name -> packed tarball path. */
 	const tarballOf = new Map();
-	for (const pkg of PACKAGES) {
+	for (const pkg of PLUGINS) {
 		const dir = join(ROOT, pkg);
 		const manifest = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
 		const packed = run("pnpm", ["pack", "--pack-destination", tarballs], { cwd: dir });
@@ -205,7 +201,6 @@ try {
 		ok(existsSync(file), `packed ${manifest.name}@${manifest.version}`);
 		tarballOf.set(manifest.name, file);
 	}
-	const libraryTarball = tarballOf.get(`@hilariouhiss/${LIBRARY}`);
 
 	step(`installing into a throwaway profile ${profileDir}`);
 	writeFileSync(
@@ -216,9 +211,6 @@ try {
 			"",
 			"nodeLinker: hoisted",
 			"autoInstallPeers: false",
-			"",
-			"overrides:",
-			`  '@hilariouhiss/${LIBRARY}': ${JSON.stringify(`file:${libraryTarball}`)}`,
 			"",
 		].join("\n"),
 	);
