@@ -1,0 +1,46 @@
+name: publish
+
+# 推一个 <目录名>@<版本> tag（例如 dsh-colgrep@1.2.3）就发布这一个包。
+# tag 必须与 <目录名>/package.json 的 version 逐字一致，否则在发布前失败。
+on:
+  push:
+    tags:
+      - "dsh-*@*"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing（OIDC），不需要任何长期 token
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4 # 与 pnpm-lock.yaml 的生成版本一致
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24 # 自带 npm >= 11.5.1，trusted publishing 的最低要求
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+
+      - name: 解析 tag 指向的包
+        id: target
+        run: node scripts/resolve-tag.mjs "$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 测试
+        run: pnpm test
+
+      # npm 在这里用 GitHub 的 OIDC token 换取一次性发布凭据，并自动生成 provenance。
+      # 包内 prepublishOnly 还会再跑一次该包自己的测试。
+      - name: 发布 ${{ steps.target.outputs.name }}
+        working-directory: ${{ steps.target.outputs.dir }}
+        run: npm publish

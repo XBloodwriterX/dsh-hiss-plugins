@@ -65,9 +65,22 @@ dsh plugin --profile web add    @hilariouhiss/dsh-colgrep@latest
 
 ## 发布
 
-首次登录 npm（一次即可）：在任一包目录执行 `npm login`。
+推一个 `<目录名>@<版本>` tag 即可：CI（[`.github/workflows/publish.yml`](.github/workflows/publish.yml)）解析 tag、
+跑全量测试，再用 **npm trusted publishing（OIDC，无需任何 token/secret）** 发布这一个包。
 
-发布各插件（顺序无关）：
+```powershell
+git tag dsh-colgrep@1.2.3        # 必须与 dsh-colgrep/package.json 的 version 逐字一致
+git push origin dsh-colgrep@1.2.3
+```
+
+tag 名里没有的包不会被发布；tag 与 manifest 不一致、或目录不存在时，工作流在发布前就失败
+（可先本地验一遍：`node scripts/resolve-tag.mjs dsh-colgrep@1.2.3`）。
+
+**首次使用前**，在 npmjs.com 上为四个包分别配置 trusted publisher：
+Package → Settings → Trusted Publisher → GitHub Actions，填组织 `hilariouhiss`、仓库 `dsh-hiss-plugins`、
+workflow 文件名 `publish.yml`。配好之后 CI 不再需要 `NPM_TOKEN`。
+
+手工发布（不走 CI，需先 `npm login`）：
 
 ```powershell
 pnpm run publish:dsh-colgrep
