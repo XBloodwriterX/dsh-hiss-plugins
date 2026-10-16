@@ -1,0 +1,22 @@
+{
+	"meta": {
+		"title": "dsh-hiss-plugins",
+		"description": "One DeepSeek Harness bundle carrying four switchable plugins — colgrep, codegraph, project-mcp and git-bash — managed from a tab in the Plugins page."
+	},
+	"loading": "Reading plugins…",
+	"error": "Plugins are unavailable: {error}",
+	"retry": "Retry",
+	"empty": "This bundle declares no plugin rows.",
+	"enabledTag": "Enabled",
+	"disabledTag": "Disabled",
+	"toggleAria": "Toggle {name}",
+	"toggleFailed": "Switching {name} failed: {error}",
+	"restartRequired": "The change to {name} takes effect after DSH restarts.",
+	"reasonManagementRequired": "DSH manages this plugin itself, so it cannot be switched from this page.",
+	"reasonUnaddressable": "This plugin's row cannot be addressed in the profile; edit cordis.patch.yml by hand.",
+	"reasonUnknown": "This plugin cannot be switched from this page ({code}).",
+	"featureColgrepDescription": "semantic code search tool",
+	"featureCodegraphDescription": "CodeGraph MCP tools",
+	"featureProjectMcpDescription": "mounts the project's .mcp.json per session",
+	"featureGitbashDescription": "Git Bash shell on Windows"
+}

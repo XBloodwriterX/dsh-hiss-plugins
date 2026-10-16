@@ -3,7 +3,7 @@
  * Map a release tag to the one package it releases.
  *
  * The repo tags a package as `<directory>@<version>` (for example
- * `dsh-colgrep@1.2.3`), which is what the publish workflow triggers on. The
+ * `dsh-hiss-plugins@1.0.0`), which is what the publish workflow triggers on. The
  * tag has to agree with the manifest it names: a typo would otherwise publish
  * whatever version happened to sit in `package.json`, so every mismatch is a
  * hard failure here instead of a surprise on the registry.
@@ -11,8 +11,8 @@
  * Printing `key=value` lines makes the output directly appendable to
  * `$GITHUB_OUTPUT`; `--json` is for humans and tests.
  *
- *     node scripts/resolve-tag.mjs dsh-colgrep@1.2.3
- *     node scripts/resolve-tag.mjs dsh-colgrep@1.2.3 --json
+ *     node scripts/resolve-tag.mjs dsh-hiss-plugins@1.0.0
+ *     node scripts/resolve-tag.mjs dsh-hiss-plugins@1.0.0 --json
  *
  * @module dsh-hiss-plugins/scripts/resolve-tag
  */
@@ -24,7 +24,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 /**
  * Split a release tag into the package directory and version it names.
- * @param {string} tag - the pushed tag, e.g. `dsh-colgrep@1.2.3`.
+ * @param {string} tag - the pushed tag, e.g. `dsh-hiss-plugins@1.0.0`.
  * @returns {{ dir: string, version: string }} the directory and version the tag names.
  * @throws when the tag is not `dsh-<name>@<semver>`.
  */

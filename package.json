@@ -6,9 +6,6 @@
   "scripts": {
     "test": "pnpm -r test && node --test scripts/resolve-tag.test.mjs",
     "smoke": "node scripts/smoke-profile.mjs",
-    "publish:dsh-colgrep": "pnpm --filter @hilariouhiss/dsh-colgrep publish",
-    "publish:dsh-codegraph": "pnpm --filter @hilariouhiss/dsh-codegraph publish",
-    "publish:dsh-project-mcp": "pnpm --filter @hilariouhiss/dsh-project-mcp publish",
-    "publish:dsh-gitbash": "pnpm --filter @hilariouhiss/dsh-gitbash publish"
+    "publish:dsh-hiss-plugins": "pnpm --filter @hilariouhiss/dsh-hiss-plugins publish"
   }
 }

@@ -10,7 +10,7 @@
  * packages with a different generation. `dsh --dump-config` is not enough — it
  * composes the tree without importing a single module. The session step covers
  * the other blind spot: behaviour that lives in the harness rather than in this
- * repo, such as `dsh-project-mcp` mounting the MCP bridge into `agent.ctx` from
+ * repo, such as the merged package's project-mcp row mounting the MCP bridge into `agent.ctx` from
  * an `agent/created` listener, which a fake context could only assume.
  *
  * Not part of `pnpm test`: it needs the network, pnpm, and a `dsh` on PATH, and
@@ -29,7 +29,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 /** Installed as profile dependencies; everything else arrives transitively. */
-const PLUGINS = ["dsh-colgrep", "dsh-codegraph", "dsh-project-mcp", "dsh-gitbash"];
+const PLUGINS = ["dsh-hiss-plugins"];
 const PROFILE = "smoke";
 const BOOT_TIMEOUT_MS = 120_000;
 const SESSION_TIMEOUT_MS = 90_000;
@@ -265,7 +265,7 @@ try {
 	}
 
 	step("opening a real session in a project that declares an MCP server");
-	// The real-seam check for `dsh-project-mcp`, and the reason a boot alone is
+	// The real-seam check for the project-mcp row, and the reason a boot alone is
 	// not enough: its whole job is mounting the host MCP bridge into `agent.ctx`
 	// from an `agent/created` listener, and a fake context in a unit test would
 	// only encode this script's assumption about the harness. So drive the real

@@ -1,0 +1,79 @@
+{
+	"name": "@hilariouhiss/dsh-hiss-plugins",
+	"version": "1.0.0",
+	"description": "dsh-hiss-plugins — one DeepSeek Harness bundle carrying four independently switchable plugins (colgrep, codegraph, project-mcp, git-bash) plus a management tab in the Plugins page.",
+	"keywords": [
+		"dsh",
+		"deepseek-harness",
+		"dsh-plugin",
+		"colgrep",
+		"codegraph",
+		"mcp",
+		"git-bash",
+		"semantic-search"
+	],
+	"license": "MIT",
+	"author": {
+		"name": "dsh-hiss-plugins contributors"
+	},
+	"homepage": "https://github.com/hilariouhiss/dsh-hiss-plugins/tree/main/dsh-hiss-plugins",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/hilariouhiss/dsh-hiss-plugins.git",
+		"directory": "dsh-hiss-plugins"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org"
+	},
+	"type": "module",
+	"main": "./lib/index.js",
+	"exports": {
+		".": "./lib/index.js",
+		"./colgrep": "./lib/colgrep/index.js",
+		"./codegraph": "./lib/codegraph/index.js",
+		"./project-mcp": "./lib/project-mcp/index.js",
+		"./gitbash": "./lib/gitbash/index.js",
+		"./client": "./lib/client.js",
+		"./locale/*.json": "./locale/*.json",
+		"./package.json": "./package.json"
+	},
+	"files": [
+		"lib/",
+		"locale/",
+		"cordis.patch.yml",
+		"README.md",
+		"LICENSE"
+	],
+	"peerDependencies": {
+		"@deepseek-ai/dsh-bash-sandbox": "^0.2.1-alpha.4",
+		"@deepseek-ai/dsh-mcp-client": "^0.2.1-alpha.4",
+		"@deepseek-ai/dsh-tool-bash": "^0.2.1-alpha.4",
+		"@deepseek-ai/dsh-tools": "^0.2.1-alpha.4"
+	},
+	"devDependencies": {
+		"@deepseek-ai/dsh-bash-sandbox": "0.2.1-alpha.4",
+		"@deepseek-ai/dsh-mcp-client": "0.2.1-alpha.4",
+		"@deepseek-ai/dsh-tool-bash": "0.2.1-alpha.4",
+		"@deepseek-ai/dsh-tools": "0.2.1-alpha.4"
+	},
+	"dsh": {
+		"bundle": {
+			"patch": "./cordis.patch.yml"
+		},
+		"client": {
+			"platform": "web",
+			"inject": [
+				"@deepseek-ai/dsh-api-remotes",
+				"@deepseek-ai/dsh-client-modules"
+			]
+		}
+	},
+	"scripts": {
+		"test": "node --test",
+		"prepublishOnly": "npm test"
+	},
+	"engines": {
+		"node": ">=20"
+	}
+}

@@ -1,0 +1,22 @@
+{
+	"meta": {
+		"title": "dsh-hiss-plugins",
+		"description": "一个 DeepSeek Harness 组合包，携带 colgrep、codegraph、project-mcp、git-bash 四个可独立开关的插件，并在插件页提供管理标签。"
+	},
+	"loading": "正在读取插件…",
+	"error": "暂时无法读取插件：{error}",
+	"retry": "重试",
+	"empty": "本包没有声明任何插件行。",
+	"enabledTag": "已启用",
+	"disabledTag": "已停用",
+	"toggleAria": "切换 {name}",
+	"toggleFailed": "切换 {name} 失败：{error}",
+	"restartRequired": "{name} 的改动将在重启 DSH 后生效。",
+	"reasonManagementRequired": "该插件由 DSH 自身管理，无法在这个页面切换。",
+	"reasonUnaddressable": "无法在 profile 中定位该插件的行，请手动修改 cordis.patch.yml。",
+	"reasonUnknown": "该插件无法在这个页面切换（{code}）。",
+	"featureColgrepDescription": "语义代码检索工具",
+	"featureCodegraphDescription": "代码图 MCP 工具",
+	"featureProjectMcpDescription": "按会话挂载项目 .mcp.json",
+	"featureGitbashDescription": "Windows 上的 Git Bash shell"
+}
