@@ -1,5 +1,5 @@
 {
-	"name": "@hilariouhiss/dsh-hiss-plugins",
+	"name": "dsh-hiss-plugins",
 	"version": "1.0.0",
 	"description": "dsh-hiss-plugins — one DeepSeek Harness bundle carrying four independently switchable plugins (colgrep, codegraph, project-mcp, git-bash) plus a management tab in the Plugins page.",
 	"keywords": [
@@ -23,7 +23,6 @@
 		"directory": "dsh-hiss-plugins"
 	},
 	"publishConfig": {
-		"access": "public",
 		"registry": "https://registry.npmjs.org"
 	},
 	"type": "module",

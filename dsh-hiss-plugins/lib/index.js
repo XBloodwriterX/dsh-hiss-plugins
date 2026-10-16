@@ -6,7 +6,7 @@
  * Plugins page arrives through this row and nothing else. The four features live in
  * their own top-level rows, so switching one of them never removes this seat.
  *
- * @module @hilariouhiss/dsh-hiss-plugins
+ * @module dsh-hiss-plugins
  */
 export const name = "dsh-hiss-plugins";
 export const inject = [];

@@ -1,4 +1,4 @@
-# @hilariouhiss/dsh-hiss-plugins
+# dsh-hiss-plugins
 
 一个 DeepSeek Harness **bundle 插件**，把四个功能装在一个包里：**colgrep**（语义代码检索）、**codegraph**（代码图 MCP）、**project-mcp**（项目 `.mcp.json`）、**git-bash**（Windows 上的 Git Bash shell）。四个功能各占一条顶层行，可以在 **Plugins 页**里单独开关；包还带一个管理标签，就挂在那个页面上。
 
@@ -10,11 +10,11 @@
 
 | 行 id | 模块 | 作用 | 默认 |
 |---|---|---|---|
-| `dsh-hiss-plugins` | `@hilariouhiss/dsh-hiss-plugins` | 载体行：空的 host 半，只为让浏览器半（`lib/client.js`，即管理标签）被送出 | 开 |
-| `dsh-hiss-plugins-colgrep` | `@hilariouhiss/dsh-hiss-plugins/colgrep` | `colgrep` 模型工具（语义检索，`root` 可指定项目） | 开 |
-| `dsh-hiss-plugins-codegraph` | `@hilariouhiss/dsh-hiss-plugins/codegraph` | 经 MCP 注册 `mcp__codegraph__*` 工具 + 使用引导 | 开 |
-| `dsh-hiss-plugins-project-mcp` | `@hilariouhiss/dsh-hiss-plugins/project-mcp` | 读会话项目根的 `.mcp.json`，把其中的 MCP server 挂进该 agent 自己的 scope | 开 |
-| `dsh-hiss-plugins-gitbash` | `@hilariouhiss/dsh-hiss-plugins/gitbash` | Windows 上接入 Git Bash：提供 `ctx.shell` + 宿主 `bash` 工具 | 非 Windows 关 |
+| `dsh-hiss-plugins` | `dsh-hiss-plugins` | 载体行：空的 host 半，只为让浏览器半（`lib/client.js`，即管理标签）被送出 | 开 |
+| `dsh-hiss-plugins-colgrep` | `dsh-hiss-plugins/colgrep` | `colgrep` 模型工具（语义检索，`root` 可指定项目） | 开 |
+| `dsh-hiss-plugins-codegraph` | `dsh-hiss-plugins/codegraph` | 经 MCP 注册 `mcp__codegraph__*` 工具 + 使用引导 | 开 |
+| `dsh-hiss-plugins-project-mcp` | `dsh-hiss-plugins/project-mcp` | 读会话项目根的 `.mcp.json`，把其中的 MCP server 挂进该 agent 自己的 scope | 开 |
+| `dsh-hiss-plugins-gitbash` | `dsh-hiss-plugins/gitbash` | Windows 上接入 Git Bash：提供 `ctx.shell` + 宿主 `bash` 工具 | 非 Windows 关 |
 
 **四条功能行就是 Plugins 页里那四个开关。** 载体行不在标签的开关列表里 —— 它是空的 host 半，但只有它在，浏览器半才会被送进页面；关掉它，管理标签本身就没了。
 
@@ -33,14 +33,14 @@
 ## 安装 / 卸载
 
 ```powershell
-dsh plugin --profile web add @hilariouhiss/dsh-hiss-plugins
+dsh plugin --profile web add dsh-hiss-plugins
 # 或从本仓 checkout：dsh plugin --profile web add link:./dsh-hiss-plugins
 ```
 
-把 `web` 换成你的 profile 名（例如 `headless`），然后**重启 dsh**。`dsh plugin` 会把本包装进 profile 的 `node_modules`；因为 `package.json` 声明了 `dsh.bundle.patch`，profile 的 bundle 列表会自动追加 `@hilariouhiss/dsh-hiss-plugins`，重启后五条行一起激活。
+把 `web` 换成你的 profile 名（例如 `headless`），然后**重启 dsh**。`dsh plugin` 会把本包装进 profile 的 `node_modules`；因为 `package.json` 声明了 `dsh.bundle.patch`，profile 的 bundle 列表会自动追加 `dsh-hiss-plugins`，重启后五条行一起激活。
 
 ```powershell
-dsh plugin --profile web remove @hilariouhiss/dsh-hiss-plugins
+dsh plugin --profile web remove dsh-hiss-plugins
 ```
 
 也要重启。单个功能不想用，不必卸载：在 Plugins 页里关掉那一行即可。
@@ -49,7 +49,7 @@ dsh plugin --profile web remove @hilariouhiss/dsh-hiss-plugins
 
 Plugins 页（侧边栏 **插件**）里多出一个 `dsh-hiss-plugins` 标签，列出上面四条功能行与它们的开关。
 
-- 浏览器半是 **`lib/client.js`** —— 手写的 lazy-CJS bundle，没有构建步骤：`window.__ModuleLoader__.load({ id: "@hilariouhiss/dsh-hiss-plugins", factory })` 只注册工厂，模块体（slot 注册、locale 字典）在首次被 require 时执行。`id` 必须逐字等于包名（客户端图里的行 id 就是包名）。
+- 浏览器半是 **`lib/client.js`** —— 手写的 lazy-CJS bundle，没有构建步骤：`window.__ModuleLoader__.load({ id: "dsh-hiss-plugins", factory })` 只注册工厂，模块体（slot 注册、locale 字典）在首次被 require 时执行。`id` 必须逐字等于包名（客户端图里的行 id 就是包名）。
 - `package.json` 里 `dsh.client.platform = "web"`、`exports["./client"]` 指向 `lib/client.js`；客户端模块系统按 Loader 行扫描，**只有本包有行挂载，这个文件才会被送进浏览器**。
 - 标签注册进 Plugins 页声明的 `plugins.tab` list slot（`ctx.slots.inject("plugins.tab", …)`），排在页面自己的「已安装」标签之后；文案来自包内的 `locale/*.json`。
 - `exports.inject` 是浏览器侧**服务名**（`slots`、`locale`、`remote`、`remote.pluginManager`）；远程调用形如 `ctx.remote.<命名空间>.<方法>`，命名空间就是 host 侧服务名。
@@ -61,7 +61,7 @@ Plugins 页（侧边栏 **插件**）里多出一个 `dsh-hiss-plugins` 标签�
 
 ```yaml
 - id: dsh-hiss-plugins-gitbash
-  name: '@hilariouhiss/dsh-hiss-plugins/gitbash'
+  name: 'dsh-hiss-plugins/gitbash'
   disabled: !!js process.platform !== 'win32'
   isolate:
     shell: true

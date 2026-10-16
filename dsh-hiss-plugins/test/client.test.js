@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 /** The registration key: the client module system matches it against the Loader row's package. */
-const PACKAGE_ID = "@hilariouhiss/dsh-hiss-plugins";
+const PACKAGE_ID = "dsh-hiss-plugins";
 /** Dictionary namespace the tab registers and binds. */
 const NS = "hissPlugins";
 /** The four feature rows the tab manages, in the order it lists them. */

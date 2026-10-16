@@ -1,6 +1,6 @@
 # AGENTS.md
 
-> pnpm workspace 单仓：只发布一个包 `dsh-hiss-plugins/`（npm `@hilariouhiss/dsh-hiss-plugins`），把四个功能打成一个 **DSH（DeepSeek Harness）bundle 插件**。
+> pnpm workspace 单仓：只发布一个包 `dsh-hiss-plugins/`（npm `dsh-hiss-plugins`），把四个功能打成一个 **DSH（DeepSeek Harness）bundle 插件**。
 > 最高优先级：**不要破坏已发布的插件契约** —— `package.json` 的 `dsh`/`exports`/`files`、`cordis.patch.yml` 的五行、`lib/*/index.js` 与 `lib/client.js` 的导出形状。
 
 ## 1. 仓库地图
@@ -22,7 +22,7 @@
 
 ## 2. 插件如何工作
 
-`dsh plugin --profile <p> add @hilariouhiss/dsh-hiss-plugins` → 装进 profile 的 `node_modules` → DSH 读到 `package.json` 的 `dsh.bundle.patch` → 启动时应用 `cordis.patch.yml` 的 `- insert: [{ id, name }]` → DSH 用 `name`（模块说明符）解析该模块并调用 `apply(ctx)`。
+`dsh plugin --profile <p> add dsh-hiss-plugins` → 装进 profile 的 `node_modules` → DSH 读到 `package.json` 的 `dsh.bundle.patch` → 启动时应用 `cordis.patch.yml` 的 `- insert: [{ id, name }]` → DSH 用 `name`（模块说明符）解析该模块并调用 `apply(ctx)`。
 运行在 **host plane**，注册物进入 global layer：对该 profile 的**所有 preset、所有会话**可见。
 
 ### 2.1 bundle patch 如何组行
@@ -31,11 +31,11 @@ profile 的每个 bundle 各贡献一层 patch，本包的 `cordis.patch.yml` �
 
 | 行 id | `name`（模块说明符） | 作用 |
 |---|---|---|
-| `dsh-hiss-plugins` | `@hilariouhiss/dsh-hiss-plugins` | 载体行：空 host 半，占一条 Loader 行 |
-| `dsh-hiss-plugins-colgrep` | `@hilariouhiss/dsh-hiss-plugins/colgrep` | colgrep 工具 |
-| `dsh-hiss-plugins-codegraph` | `@hilariouhiss/dsh-hiss-plugins/codegraph` | codegraph MCP 桥 + 引导 |
-| `dsh-hiss-plugins-project-mcp` | `@hilariouhiss/dsh-hiss-plugins/project-mcp` | 按会话挂载 `.mcp.json` |
-| `dsh-hiss-plugins-gitbash` | `@hilariouhiss/dsh-hiss-plugins/gitbash` | Windows Git Bash（自带 realm 隔离） |
+| `dsh-hiss-plugins` | `dsh-hiss-plugins` | 载体行：空 host 半，占一条 Loader 行 |
+| `dsh-hiss-plugins-colgrep` | `dsh-hiss-plugins/colgrep` | colgrep 工具 |
+| `dsh-hiss-plugins-codegraph` | `dsh-hiss-plugins/codegraph` | codegraph MCP 桥 + 引导 |
+| `dsh-hiss-plugins-project-mcp` | `dsh-hiss-plugins/project-mcp` | 按会话挂载 `.mcp.json` |
+| `dsh-hiss-plugins-gitbash` | `dsh-hiss-plugins/gitbash` | Windows Git Bash（自带 realm 隔离） |
 
 **这五行必须是顶层行，永远不要改成 `cordis:group` + children。** 插件管理器只能给「组合后的 patch 里存在同 `id`、同 `name`，且该行挂载后父 entry 就是 profile 的 `include`」的行持久化开关 —— `dsh-plugin-manager` 的 `listPlugins()` 逐个检查 `candidate.name !== entry.moduleName || actual?.parent.tree.ctx.fiber.entry?.id !== "include"`，命中就标 `unaddressable`。组会把子行变成不可寻址：**包在 `cordis:group` 里的一组功能在 Plugins 页永远不会出现开关**。git-bash 行因此把 realm 隔离写在自己身上（`isolate: { shell: true, settings: true }`），而不是包在一个 realm 组里；同一行内的模块再把宿主 `bash` 工具挂进这个 realm（消费方离开 provider 的 realm 会解析到宿主的 pwsh 执行器）。
 
@@ -60,7 +60,7 @@ profile 的每个 bundle 各贡献一层 patch，本包的 `cordis.patch.yml` �
 
   ```js
   window.__ModuleLoader__.load({
-  	id: "@hilariouhiss/dsh-hiss-plugins", // 必须逐字等于包名：客户端图里的行 id 就是包名
+  	id: "dsh-hiss-plugins", // 必须逐字等于包名：客户端图里的行 id 就是包名
   	factory: (require) => {
   		var module = { exports: {} };
   		var exports = module.exports;
@@ -109,7 +109,7 @@ profile 的每个 bundle 各贡献一层 patch，本包的 `cordis.patch.yml` �
 
 ## 5. 新增功能行
 
-- 加一个功能：`lib/<feature>/index.js`（导出 `name`/`inject`/`apply`）→ `package.json` 的 `exports` 加 `"./<feature>"` → `cordis.patch.yml` 加一条**顶层**行（`id: dsh-hiss-plugins-<feature>`，`name: @hilariouhiss/dsh-hiss-plugins/<feature>`）→ 确认 `files` 白名单覆盖新文件 → 要在 Plugins 页可开关就把该行加进浏览器半的列表 → 写测试（含 `test/manifest.test.js` 里列出该功能用到的 `@deepseek-ai/*` 并按 §3.4 声明、`test/patch.test.js` 里守住顶层形状）→ `dsh plugin --profile <p> add link:./dsh-hiss-plugins` 本地验证 → 发版前 `node scripts/smoke-profile.mjs` 走一遍真实安装 + 真启动。
+- 加一个功能：`lib/<feature>/index.js`（导出 `name`/`inject`/`apply`）→ `package.json` 的 `exports` 加 `"./<feature>"` → `cordis.patch.yml` 加一条**顶层**行（`id: dsh-hiss-plugins-<feature>`，`name: dsh-hiss-plugins/<feature>`）→ 确认 `files` 白名单覆盖新文件 → 要在 Plugins 页可开关就把该行加进浏览器半的列表 → 写测试（含 `test/manifest.test.js` 里列出该功能用到的 `@deepseek-ai/*` 并按 §3.4 声明、`test/patch.test.js` 里守住顶层形状）→ `dsh plugin --profile <p> add link:./dsh-hiss-plugins` 本地验证 → 发版前 `node scripts/smoke-profile.mjs` 走一遍真实安装 + 真启动。
 - 提交用 **Conventional Commits**（英文）：`feat:`/`fix:`/`docs:`/`refactor:`/`chore:`/`test:`；一个提交只做一件事。
 
 ## 6. 常见陷阱
@@ -135,14 +135,14 @@ git push origin dsh-hiss-plugins@1.0.0
 
 - 工作流在 **Windows runner** 上跑（git-bash 只在 Windows 上解析得出来，测试固件也按 Windows 路径语义断言；ubuntu 上这些断言不可能通过）：解析 tag → `pnpm install --frozen-lockfile` → `pnpm test` → 在 tag 指向的目录里 `npm publish`，用 **npm trusted publishing（OIDC，无需任何 token/secret）**。包内 `prepublishOnly` 还会再跑一次该包自己的测试。
 - tag 名里没有的包不会被发布；tag 与 manifest 不一致、或目录不存在时，工作流在发布前就失败（可先本地验一遍：`node scripts/resolve-tag.mjs dsh-hiss-plugins@1.0.0`）。
-- **首次使用前**，在 npmjs.com 上为 `@hilariouhiss/dsh-hiss-plugins` 配置一次 trusted publisher：Package → Settings → Trusted Publisher → GitHub Actions，填组织 `hilariouhiss`、仓库 `dsh-hiss-plugins`、workflow 文件名 `publish.yml`。配好之后 CI 不再需要 `NPM_TOKEN`。
+- **首次使用前**，在 npmjs.com 上为 `dsh-hiss-plugins` 配置一次 trusted publisher：Package → Settings → Trusted Publisher → GitHub Actions，填组织 `hilariouhiss`、仓库 `dsh-hiss-plugins`、workflow 文件名 `publish.yml`。配好之后 CI 不再需要 `NPM_TOKEN`。
 - 手工发布（不走 CI，需先 `npm login`）：`pnpm run publish:dsh-hiss-plugins`。
 
 ## 8. 装坏的 profile 怎么恢复
 
 ```powershell
-dsh plugin --profile web remove @hilariouhiss/dsh-hiss-plugins   # 先让 dsh 能起来
-dsh plugin --profile web add    @hilariouhiss/dsh-hiss-plugins@latest
+dsh plugin --profile web remove dsh-hiss-plugins   # 先让 dsh 能起来
+dsh plugin --profile web add    dsh-hiss-plugins@latest
 ```
 
 若 `dsh` 已完全无法启动，直接删掉 profile 里被 hoist 的旧副本再重启：

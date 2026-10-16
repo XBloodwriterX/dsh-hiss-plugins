@@ -1,4 +1,4 @@
-# @hilariouhiss/dsh-hiss-plugins bundle patch: one package, five top-level rows.
+# dsh-hiss-plugins bundle patch: one package, five top-level rows.
 #
 # The carrier row (`dsh-hiss-plugins`) is an empty host half: it exists so the package
 # holds a Loader row, which is what the client module system serves the browser half
@@ -14,19 +14,19 @@
 # module mounts the host `bash` tool inside that same realm.
 - insert:
     - id: dsh-hiss-plugins
-      name: '@hilariouhiss/dsh-hiss-plugins'
+      name: 'dsh-hiss-plugins'
 
     - id: dsh-hiss-plugins-colgrep
-      name: '@hilariouhiss/dsh-hiss-plugins/colgrep'
+      name: 'dsh-hiss-plugins/colgrep'
 
     - id: dsh-hiss-plugins-codegraph
-      name: '@hilariouhiss/dsh-hiss-plugins/codegraph'
+      name: 'dsh-hiss-plugins/codegraph'
 
     - id: dsh-hiss-plugins-project-mcp
-      name: '@hilariouhiss/dsh-hiss-plugins/project-mcp'
+      name: 'dsh-hiss-plugins/project-mcp'
 
     - id: dsh-hiss-plugins-gitbash
-      name: '@hilariouhiss/dsh-hiss-plugins/gitbash'
+      name: 'dsh-hiss-plugins/gitbash'
       disabled: !!js process.platform !== 'win32'
       isolate:
         shell: true

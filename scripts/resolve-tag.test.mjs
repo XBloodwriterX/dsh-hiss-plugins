@@ -16,7 +16,7 @@ function workspace(version = "1.2.3") {
 	mkdirSync(join(root, "dsh-hiss-plugins"));
 	writeFileSync(
 		join(root, "dsh-hiss-plugins", "package.json"),
-		JSON.stringify({ name: "@hilariouhiss/dsh-hiss-plugins", version }),
+		JSON.stringify({ name: "dsh-hiss-plugins", version }),
 	);
 	return root;
 }
@@ -35,7 +35,7 @@ test("rejects tags that are not <directory>@<version>", () => {
 
 test("rejects a tag that is not a dsh-* directory or not a semver", () => {
 	// A scope prefix has a second "@", so it is rejected as a malformed tag before the directory rule applies.
-	assert.throws(() => parseTag("@hilariouhiss/dsh-hiss-plugins@1.2.3"), /is not <directory>@<version>/u);
+	assert.throws(() => parseTag("@someone/dsh-hiss-plugins@1.2.3"), /is not <directory>@<version>/u);
 	assert.throws(() => parseTag("packages/colgrep@1.2.3"), /dsh-\* package directory/u);
 	assert.throws(() => parseTag("dsh-hiss-plugins@latest"), /semver version/u);
 	assert.throws(() => parseTag("dsh-hiss-plugins@1.2"), /semver version/u);
@@ -44,7 +44,7 @@ test("rejects a tag that is not a dsh-* directory or not a semver", () => {
 test("resolves the tagged package against its manifest", () => {
 	assert.deepEqual(resolveTag(workspace(), "dsh-hiss-plugins@1.2.3"), {
 		dir: "dsh-hiss-plugins",
-		name: "@hilariouhiss/dsh-hiss-plugins",
+		name: "dsh-hiss-plugins",
 		version: "1.2.3",
 	});
 });

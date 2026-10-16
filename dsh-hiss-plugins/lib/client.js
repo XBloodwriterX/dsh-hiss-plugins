@@ -9,10 +9,10 @@
  * The tab owns no state: it reads the running profile through `pluginManager/listPlugins` and
  * re-reads after every switch, so what the page shows is always what the host holds.
  *
- * @module @hilariouhiss/dsh-hiss-plugins/client
+ * @module dsh-hiss-plugins/client
  */
 window.__ModuleLoader__.load({
-	id: "@hilariouhiss/dsh-hiss-plugins",
+	id: "dsh-hiss-plugins",
 	factory: (require) => {
 		var module = { exports: {} };
 		var exports = module.exports;
@@ -22,7 +22,7 @@ window.__ModuleLoader__.load({
 		/** Dictionary namespace owned by this plugin. */
 		const NS = "hissPlugins";
 		/** The one package whose rows this tab manages. */
-		const PACKAGE_ID = "@hilariouhiss/dsh-hiss-plugins";
+		const PACKAGE_ID = "dsh-hiss-plugins";
 		/**
 		 * The features this bundle carries, in the order the tab lists them.
 		 * Each row is a top-level Loader row, which is what makes its switch addressable at all.

@@ -21,7 +21,7 @@ import { resolveGitBash } from "./resolve.js";
  * other write the policy does not allow — with the approval-gated escalation as the
  * exit.
  *
- * @module @hilariouhiss/dsh-hiss-plugins/gitbash/gitbash-executor
+ * @module dsh-hiss-plugins/gitbash/gitbash-executor
  */
 
 /**

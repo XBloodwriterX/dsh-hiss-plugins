@@ -3,7 +3,7 @@ import * as BashTool from "@deepseek-ai/dsh-tool-bash";
 import { createGitBashExecutor } from "./gitbash-executor.js";
 
 /**
- * The `@hilariouhiss/dsh-hiss-plugins/gitbash` row: this machine's Git Bash as a
+ * The `dsh-hiss-plugins/gitbash` row: this machine's Git Bash as a
  * first-class shell on Windows.
  *
  * A composition root rather than an executor. The bundle patch gives this one row its own
@@ -30,7 +30,7 @@ import { createGitBashExecutor } from "./gitbash-executor.js";
  * `bash` call is reported as a sandbox denial — lives in `cordis.patch.yml` and
  * `gitbash-executor.js`.
  *
- * @module @hilariouhiss/dsh-hiss-plugins/gitbash
+ * @module dsh-hiss-plugins/gitbash
  */
 const GitBashExecutor = createGitBashExecutor(SandboxBashExecutor);
 

@@ -196,8 +196,9 @@ try {
 			ok(false, `pnpm pack ${pkg} failed:\n${packed.output}`);
 			throw new Error("pack failed");
 		}
-		// pnpm names a scoped tarball `<scope>-<name>-<version>.tgz` with the scope's `@` dropped.
-		const file = join(tarballs, `${manifest.name.slice(1).replace("/", "-")}-${manifest.version}.tgz`);
+		// pnpm drops a scope's `@` and joins it with `-`: `@scope/name` -> `scope-name`, `name` -> `name`.
+		const stem = manifest.name.startsWith("@") ? manifest.name.slice(1).replace("/", "-") : manifest.name;
+		const file = join(tarballs, `${stem}-${manifest.version}.tgz`);
 		ok(existsSync(file), `packed ${manifest.name}@${manifest.version}`);
 		tarballOf.set(manifest.name, file);
 	}
@@ -214,7 +215,8 @@ try {
 			"",
 		].join("\n"),
 	);
-	const bundled = PLUGINS.map((pkg) => `@hilariouhiss/${pkg}`);
+	/** Package names as their manifests publish them (the directory is not always the package name). */
+	const bundled = PLUGINS.map((pkg) => JSON.parse(readFileSync(join(ROOT, pkg, "package.json"), "utf8")).name);
 	writeFileSync(
 		join(profileDir, "package.json"),
 		JSON.stringify(

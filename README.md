@@ -6,7 +6,7 @@ DeepSeek Harness (dsh) 插件仓库（pnpm workspace 单仓）：装一个包，
 
 | 包 | 说明 |
 |---|---|
-| [dsh-hiss-plugins](dsh-hiss-plugins)（npm: `@hilariouhiss/dsh-hiss-plugins`，v1.0.0） | 一个 bundle，五条顶层行：一条载体行 + 四条功能行；四个功能各有一个开关，Plugins 页里逐行启停 |
+| [dsh-hiss-plugins](dsh-hiss-plugins)（npm: `dsh-hiss-plugins`，v1.0.0） | 一个 bundle，五条顶层行：一条载体行 + 四条功能行；四个功能各有一个开关，Plugins 页里逐行启停 |
 
 四个功能（行 id 就是开关的持久化地址）：
 
@@ -25,15 +25,15 @@ DeepSeek Harness (dsh) 插件仓库（pnpm workspace 单仓）：装一个包，
 
 ```powershell
 # 从 npm 装
-dsh plugin --profile web add @hilariouhiss/dsh-hiss-plugins
+dsh plugin --profile web add dsh-hiss-plugins
 
 # 从本仓 checkout 装（含尚未发布的改动；在仓库根目录执行）
 dsh plugin --profile web add link:./dsh-hiss-plugins
 ```
 
-装完重启 dsh。注意 profile 的 `pnpm-workspace.yaml` 带供应链策略（`minimumReleaseAge`）：**不写版本号时，刚发布的版本会被挡住**，解析到上一代。要立刻用新版本就显式写版本号（`@hilariouhiss/dsh-hiss-plugins@1.0.0`），或把该版本加进 profile 的 `minimumReleaseAgeExclude`。
+装完重启 dsh。注意 profile 的 `pnpm-workspace.yaml` 带供应链策略（`minimumReleaseAge`）：**不写版本号时，刚发布的版本会被挡住**，解析到上一代。要立刻用新版本就显式写版本号（`dsh-hiss-plugins@1.0.0`），或把该版本加进 profile 的 `minimumReleaseAgeExclude`。
 
-卸载用 `dsh plugin --profile web remove @hilariouhiss/dsh-hiss-plugins`，然后重启。装坏的 profile 怎么救见 [AGENTS.md](AGENTS.md) §8。
+卸载用 `dsh plugin --profile web remove dsh-hiss-plugins`，然后重启。装坏的 profile 怎么救见 [AGENTS.md](AGENTS.md) §8。
 
 ## 管理标签（Plugins 页）
 
@@ -80,7 +80,7 @@ git push origin dsh-hiss-plugins@1.0.0
 tag 名里没有的包不会被发布；tag 与 manifest 不一致、或目录不存在时，工作流在发布前就失败
 （可先本地验一遍：`node scripts/resolve-tag.mjs dsh-hiss-plugins@1.0.0`）。
 
-**首次使用前**，在 npmjs.com 上为 `@hilariouhiss/dsh-hiss-plugins` 配置 trusted publisher：
+**首次使用前**，在 npmjs.com 上为 `dsh-hiss-plugins` 配置 trusted publisher：
 Package → Settings → Trusted Publisher → GitHub Actions，填组织 `hilariouhiss`、仓库 `dsh-hiss-plugins`、
 workflow 文件名 `publish.yml`。配好之后 CI 不再需要 `NPM_TOKEN`。
 

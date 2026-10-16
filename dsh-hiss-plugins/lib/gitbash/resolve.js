@@ -11,7 +11,7 @@ import { basename, delimiter, dirname, join } from "node:path";
  * Windows layout — `bin/bash.exe` next to `cmd/git.exe` — and an explicitly configured
  * path is the only route that skips the layout check.
  *
- * @module @hilariouhiss/dsh-hiss-plugins/gitbash/resolve
+ * @module dsh-hiss-plugins/gitbash/resolve
  */
 
 /** Environment variable naming one exact `bash.exe`, for non-standard or portable installs. */
