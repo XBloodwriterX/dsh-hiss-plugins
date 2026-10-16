@@ -2,17 +2,22 @@ name: publish
 
 # 推一个 <目录名>@<版本> tag（例如 dsh-colgrep@1.2.3）就发布这一个包。
 # tag 必须与 <目录名>/package.json 的 version 逐字一致，否则在发布前失败。
+# 手工重跑（tag 已存在、或上一次跑挂了）：gh workflow run publish.yml --ref <tag>
 on:
   push:
     tags:
       - "dsh-*@*"
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    # Windows runner：dsh-gitbash 只解析 Git for Windows（非 Windows 上必然找不到），
+    # 且四个包的测试固件按 Windows 路径语义断言（如 C:/other-project 的 resolve 结果），
+    # 整套测试的平台基线就是 Windows —— ubuntu 上这些断言不可能通过。
+    runs-on: windows-latest
     permissions:
       contents: read
       id-token: write # npm trusted publishing（OIDC），不需要任何长期 token
