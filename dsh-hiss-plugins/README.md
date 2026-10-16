@@ -1,12 +1,12 @@
 # dsh-hiss-plugins
 
-一个 DeepSeek Harness **bundle 插件**，把四个功能装在一个包里：**colgrep**（语义代码检索）、**codegraph**（代码图 MCP）、**project-mcp**（项目 `.mcp.json`）、**git-bash**（Windows 上的 Git Bash shell）。四个功能各占一条顶层行，可以在 **Plugins 页**里单独开关；包还带一个管理标签，就挂在那个页面上。
+一个 DeepSeek Harness **bundle 插件**，把六个功能装在一个包里：**colgrep**（语义代码检索）、**codegraph**（代码图 MCP）、**project-mcp**（项目 `.mcp.json`）、**git-bash**（Windows 上的 Git Bash shell）、**superpowers**（superpowers 技能常驻引导）、**ponytail**（ponytail 采纳提示与 `/ponytail` 等级切换）。六个功能各占一条顶层行，可以在 **Plugins 页**里单独开关；包还带一个管理标签，就挂在那个页面上。
 
 安装后对 `web`、`headless` 等任意 profile 的**所有 preset、所有会话**生效。
 
-## 五条行与四个开关
+## 七条行与六个开关
 
-`cordis.patch.yml` 只做一件事：`insert` 五条**顶层行**。宿主用 `name`（模块说明符）解析模块，用 `id` 记住开关状态。
+`cordis.patch.yml` 只做一件事：`insert` 七条**顶层行**。宿主用 `name`（模块说明符）解析模块，用 `id` 记住开关状态。
 
 | 行 id | 模块 | 作用 | 默认 |
 |---|---|---|---|
@@ -15,8 +15,10 @@
 | `dsh-hiss-plugins-codegraph` | `dsh-hiss-plugins/codegraph` | 经 MCP 注册 `mcp__codegraph__*` 工具 + 使用引导 | 开 |
 | `dsh-hiss-plugins-project-mcp` | `dsh-hiss-plugins/project-mcp` | 读会话项目根的 `.mcp.json`，把其中的 MCP server 挂进该 agent 自己的 scope | 开 |
 | `dsh-hiss-plugins-gitbash` | `dsh-hiss-plugins/gitbash` | Windows 上接入 Git Bash：提供 `ctx.shell` + 宿主 `bash` 工具 | 非 Windows 关 |
+| `dsh-hiss-plugins-superpowers` | `dsh-hiss-plugins/superpowers` | superpowers 技能常驻引导：任何回复前先检查有没有适用的技能，有就先加载（技能集本身由 DSH 原生发现） | 开 |
+| `dsh-hiss-plugins-ponytail` | `dsh-hiss-plugins/ponytail` | ponytail 采纳提示（随等级变化）+ 宿主 `/ponytail` 等级命令 | 开 |
 
-**四条功能行就是 Plugins 页里那四个开关。** 载体行不在标签的开关列表里 —— 它是空的 host 半，但只有它在，浏览器半才会被送进页面；关掉它，管理标签本身就没了。
+**六条功能行就是 Plugins 页里那六个开关。** 载体行不在标签的开关列表里 —— 它是空的 host 半，但只有它在，浏览器半才会被送进页面；关掉它，管理标签本身就没了。
 
 为什么必须是顶层行：插件管理器只为「组合后的 patch 里存在同 `id`、同 `name`，且挂载后父 entry 就是 profile 的 `include`」的行持久化开关。包在 `cordis:group` 里的子行在 `listPlugins()` 里被判为 `unaddressable`，**永远不会有开关**。所以这里没有组：git-bash 行把 realm 隔离写在自己身上（见下）。
 
@@ -28,7 +30,7 @@
 - 宿主把 `{ id: <行 id>, disabled: <bool> }` 覆盖写进 **profile 自己的** `cordis.patch.yml`（保留注释、原子写）—— 只影响这个 profile，不动包内的 `cordis.patch.yml`，所以升级/重装不会丢开关。
 - **带 HMR 的 profile 立即生效**（远程结果 `application: "applied"`）；**没有 HMR 的 profile 返回 `application: "restart-required"`（`restartReason: "no-hmr"`），重启 dsh 才生效**。
 - 行不可开关时，`listPlugins()` 会给出 `readOnlyReason`：`unaddressable`（不是顶层行 / 名字对不上）或 `management-required`（插件管理器自己的行或受保护模块）。
-- 关掉一条功能行只是让那条行不激活：另外三条行不受影响，管理标签仍在（载体行开着）。
+- 关掉一条功能行只是让那条行不激活：另外五条行不受影响，管理标签仍在（载体行开着）。
 
 ## 安装 / 卸载
 
@@ -37,7 +39,7 @@ dsh plugin --profile web add dsh-hiss-plugins
 # 或从本仓 checkout：dsh plugin --profile web add link:./dsh-hiss-plugins
 ```
 
-把 `web` 换成你的 profile 名（例如 `headless`），然后**重启 dsh**。`dsh plugin` 会把本包装进 profile 的 `node_modules`；因为 `package.json` 声明了 `dsh.bundle.patch`，profile 的 bundle 列表会自动追加 `dsh-hiss-plugins`，重启后五条行一起激活。
+把 `web` 换成你的 profile 名（例如 `headless`），然后**重启 dsh**。`dsh plugin` 会把本包装进 profile 的 `node_modules`；因为 `package.json` 声明了 `dsh.bundle.patch`，profile 的 bundle 列表会自动追加 `dsh-hiss-plugins`，重启后七条行一起激活。
 
 ```powershell
 dsh plugin --profile web remove dsh-hiss-plugins
@@ -47,7 +49,7 @@ dsh plugin --profile web remove dsh-hiss-plugins
 
 ## 管理标签（浏览器半）
 
-Plugins 页（侧边栏 **插件**）里多出一个 `dsh-hiss-plugins` 标签，列出上面四条功能行与它们的开关。
+Plugins 页（侧边栏 **插件**）里多出一个 `dsh-hiss-plugins` 标签，列出上面六条功能行与它们的开关。
 
 - 浏览器半是 **`lib/client.js`** —— 手写的 lazy-CJS bundle，没有构建步骤：`window.__ModuleLoader__.load({ id: "dsh-hiss-plugins", factory })` 只注册工厂，模块体（slot 注册、locale 字典）在首次被 require 时执行。`id` 必须逐字等于包名（客户端图里的行 id 就是包名）。
 - `package.json` 里 `dsh.client.platform = "web"`、`exports["./client"]` 指向 `lib/client.js`；客户端模块系统按 Loader 行扫描，**只有本包有行挂载，这个文件才会被送进浏览器**。
@@ -266,6 +268,44 @@ colgrep command:"init" / command:"status" / command:"clear"
 - **只解析常规 Git for Windows 布局** —— 便携版/自定义布局请显式设 `DSH_GIT_BASH`。
 - **依赖宿主包内部接缝** —— 执行器继承 `dsh-bash-sandbox` 的 `confine(command, policy)`。DSH 升级若改动该形状，插件会失效（`test/gitbash/` 里的接线断言会在契约变化时暴露）。
 
+## 功能：superpowers（常驻引导）
+
+把 superpowers 技能集的**常驻引导**接回来：只注册一个全局提示词段 `superpowers:adoption`（`order: 5`，排在人格前缀之后、各策略与工具段之前）。段文本是上游 bootstrap 原文，外层包着 `<EXTREMELY_IMPORTANT>`；技能从插件里移出来后有两处必须改，也写在这里 —— 技能改用裸名寻址、技能集没装时忽略本段：
+
+- **任何回复或动作之前**先检查有没有适用的 superpowers 技能，有就先调 `skill` 工具加载；
+- 过程类技能（`brainstorming`、`systematic-debugging`）先于实现类技能；
+- 技能用**裸 kebab-case 名**寻址（`brainstorming`、`writing-plans`、`test-driven-development`、`verification-before-completion`），不是上游的 `superpowers:<name>` 形式；
+- 技能目录里没有任何 superpowers 技能时，忽略这一段；
+- 完整指令在 `using-superpowers` 技能里，用 `skill` 工具加载。
+
+没有技能 provider，没有命令。系统提示词每回合重新组装，所以这条常驻指令在上下文压缩之后依然在。
+
+**技能本身由 DSH 原生发现**：它们就在被扫描的技能根里（`dsh-skill-filesystem` 的 `user-agents` 根，默认共享根 `~/.agents/skills`，rank 500），本插件不安装、不内置、不搬运任何技能文件。上游把「回答前先查技能」这条指令放进会话启动钩子，而 DSH 不读插件的 hook 文件 —— 缺的只有这条**常驻指令**，这也正是这个功能行存在的理由。
+
+前置要求：superpowers 技能集装在一个 DSH 会扫描的技能根里（本机惯例是共享根 `~/.agents/skills`）。
+
+验证：重启后给一个会命中 superpowers 技能的任务，看模型是否先调 `skill` 再动手。技能集没装时这段引导按它自己的判据被忽略，不影响其它行。
+
+## 功能：ponytail（采纳提示与 /ponytail 等级切换）
+
+把 ponytail 技能集的**等级状态**接回来：一个全局提示词段 `ponytail:adoption`（`order: 5`）加一个宿主命令 `/ponytail`。
+
+- **提示词段随等级变化**：等级为 `off` 时文本是空串（等于不注入）；否则是采纳提示（任何编码任务 —— 写、改、重构、修、评审、选依赖 —— 先用 `skill` 工具加载 `ponytail` 技能并按它执行）再加当前等级。当前等级写进文本里，所以重启后默认等级重新生效时这段话仍然是真的。
+- **`/ponytail` 命令**（本插件注册的宿主命令，跟同名的 `ponytail` 技能是两回事）：参数取 `lite` / `full` / `ultra` / `off`，不带参数等于 `full`。
+  - `lite` / `full` / `ultra`：把该 agent 的等级设为这一档，**并立刻把渲染好的 `ponytail` SKILL.md 正文作为一条持久 user 消息交给模型**（下一步就读到），返回 `Ponytail mode set to <level>.`；
+  - `off`：关掉该 agent 的等级，并注入一条「忽略 ponytail 指令」的消息，返回 `Ponytail off.`（不需要技能在场）；
+  - 其它输入：返回用法错误 `Usage: /ponytail [lite|full|ultra|off]`，**不改任何状态**；
+  - `ponytail` 技能缺失或读不出来：返回错误，**不改任何状态** —— 等级不能设在一个模型执行不了的技能上。
+- **默认等级**按上游的顺序解析：`PONYTAIL_DEFAULT_MODE` 环境变量 → `%APPDATA%\ponytail\config.json`（非 Windows：`$XDG_CONFIG_HOME` 或 `~/.config` 下的 `ponytail/config.json`）里的 `defaultMode` → `full`。配置缺失、读不了、坏 JSON、值非法都不是错误，直接往下走。
+- **等级状态在进程内、按 agent 分开（WeakMap），不落盘**：`/ponytail` 的设定在 dsh 重启后回到默认等级；要持久就写环境变量或配置文件。
+- 输入框里敲 `/` 会出现**两条 `ponytail`**：宿主命令（本插件注册，用来切等级）和 `ponytail` 技能（DSH 原生发现，用来加载技能正文）；`/ponytail-review` 这类手势本来就由 `dsh-tool-skill` 原生处理。
+
+**技能本身由 DSH 原生发现**：`ponytail`、`ponytail-review` 等技能就在被扫描的技能根里（默认共享根 `~/.agents/skills`，rank 500），本插件不安装、不内置任何技能，也不为每个技能注册命令。缺的只有等级 —— 一个让技能持续在线的常驻提示，和一个改变它施加力度的开关。
+
+前置要求：`ponytail` 技能装在一个 DSH 会扫描的技能根里（本机惯例是共享根 `~/.agents/skills`）。
+
+验证：`/ponytail ultra` 后给一个编码任务，模型应加载 `ponytail` 技能并按 ultra 档执行；`/ponytail off` 后该提示词段变空。
+
 ## 开发与测试
 
 ```powershell
@@ -276,25 +316,27 @@ pnpm test      # 在包目录内也可：node --test-isolation=none --test
 结构：
 
 ```text
-package.json          五条行的 bundle 声明（dsh.bundle.patch）+ 浏览器半声明（dsh.client）+ exports/files
-cordis.patch.yml      五条顶层行（载体 + 四个功能）
+package.json          七条行的 bundle 声明（dsh.bundle.patch）+ 浏览器半声明（dsh.client）+ exports/files
+cordis.patch.yml      七条顶层行（载体 + 六个功能）
 lib/index.js          载体行：空 host 半
 lib/client.js         浏览器半：Plugins 页管理标签（手写 lazy-CJS，无构建步骤）
 lib/colgrep/          colgrep 工具
 lib/codegraph/        codegraph MCP 桥 + 引导
 lib/project-mcp/      lib/config.js 纯逻辑（无宿主依赖）+ lib/index.js 接线
 lib/gitbash/          lib/resolve.js 纯逻辑 + lib/gitbash-executor.js 执行器 + lib/index.js 组合根
+lib/superpowers/      常驻引导提示词段（只注册 systemPrompt 段，不导入宿主包）
+lib/ponytail/         lib/mode.js 纯逻辑（等级解析与默认值）+ lib/index.js 提示词段与 /ponytail 命令
 locale/*.json         管理标签的文案字典
-test/                 node:test：<feature>/ 四个目录 + manifest / patch / client 三个契约测试
+test/                 node:test：<feature>/ 六个目录 + manifest / patch / client 三个契约测试
 ```
 
-`lib/project-mcp/config.js` 与 `lib/gitbash/resolve.js` 刻意不导入任何宿主包，所以解析与映射分支可以在没有 dsh 安装的环境里完整跑测试；宿主接缝由各功能的 `index.js` 承担。浏览器半用 fake `window.__ModuleLoader__` + fake `ctx` 测注册与远程调用，不启动浏览器。测试全部离线，不联网、不依赖 `colgrep`/`codegraph` CLI。
+`lib/project-mcp/config.js`、`lib/gitbash/resolve.js` 与 `lib/ponytail/mode.js` 刻意不导入任何宿主包，所以解析与映射分支可以在没有 dsh 安装的环境里完整跑测试；宿主接缝由各功能的 `index.js` 承担。浏览器半用 fake `window.__ModuleLoader__` + fake `ctx` 测注册与远程调用，不启动浏览器。测试全部离线，不联网、不依赖 `colgrep`/`codegraph` CLI。
 
 ## 发布（给维护者）
 
 ```powershell
-git tag dsh-hiss-plugins@1.0.0        # 必须与本目录 package.json 的 version 逐字一致
-git push origin dsh-hiss-plugins@1.0.0
+git tag dsh-hiss-plugins@1.1.0        # 必须与本目录 package.json 的 version 逐字一致
+git push origin dsh-hiss-plugins@1.1.0
 ```
 
 CI（`.github/workflows/publish.yml`，Windows runner）解析 tag、跑全量测试，再用 **npm trusted publishing（OIDC，无需任何 token）** 发布；包内 `prepublishOnly` 会再跑一次 `npm test`。手工发布：`npm publish`（`publishConfig.access` 已设为 public），发版前先 `node ../scripts/smoke-profile.mjs` 走一遍真实安装 + 真启动。发布新版本前记得递增 `package.json` 的 `version`。
@@ -303,4 +345,4 @@ CI（`.github/workflows/publish.yml`，Windows runner）解析 tag、跑全量�
 
 MIT，见 [LICENSE](LICENSE)。本包只调用外部的 `colgrep` 与 `codegraph` CLI（未内置它们的源码），通过 MCP 连接 CodeGraph、通过宿主 MCP 桥读取 `.mcp.json`；上游项目与许可分别见 [lightonai/next-plaid](https://github.com/lightonai/next-plaid)、[colbymchenry/codegraph](https://github.com/colbymchenry/codegraph)。沙箱行为、拒绝方言与升级流程均来自 DSH 自身（`@deepseek-ai/dsh-shell` / `dsh-bash-sandbox` / `dsh-sandbox-*`），git-bash 功能只提供执行器接线与 Git Bash 解析。
 
-> `@deepseek-ai/dsh-tools`、`@deepseek-ai/dsh-mcp-client`、`@deepseek-ai/dsh-bash-sandbox`、`@deepseek-ai/dsh-tool-bash` 由**正在运行的 dsh 安装**提供，本包只在 `peerDependencies` 里声明（`devDependencies` 供本仓安装与测试）。**不要**把它们写进 `dependencies` —— 那会让 pnpm 往 profile 里塞一份自己的副本，遮蔽安装目录里的同名包，两代混装会让整棵插件树启动失败。升级 dsh 后先跑 `node ../scripts/smoke-profile.mjs` 再发版。
+> `@deepseek-ai/dsh-tools`、`@deepseek-ai/dsh-mcp-client`、`@deepseek-ai/dsh-bash-sandbox`、`@deepseek-ai/dsh-tool-bash`、`@deepseek-ai/dsh-llm`、`@deepseek-ai/dsh-skill` 由**正在运行的 dsh 安装**提供，本包只在 `peerDependencies` 里声明（`devDependencies` 供本仓安装与测试）。**不要**把它们写进 `dependencies` —— 那会让 pnpm 往 profile 里塞一份自己的副本，遮蔽安装目录里的同名包，两代混装会让整棵插件树启动失败。升级 dsh 后先跑 `node ../scripts/smoke-profile.mjs` 再发版。
