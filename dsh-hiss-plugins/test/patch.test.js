@@ -36,9 +36,9 @@ function isolateOf(row) {
 	return row.body.slice(start + 1).filter((line) => line.search(/\S/u) > indent);
 }
 
-test("the patch inserts exactly five top-level rows", () => {
+test("the patch inserts exactly seven top-level rows", () => {
 	assert.equal((patch.match(/^- insert:\s*$/gmu) ?? []).length, 1, "the patch is a single insert layer");
-	assert.equal(rows.length, 5, `expected five rows, found: ${rows.map((row) => row.id).join(", ")}`);
+	assert.equal(rows.length, 7, `expected seven rows, found: ${rows.map((row) => row.id).join(", ")}`);
 	assert.equal(new Set(rows.map((row) => row.id)).size, rows.length, "row ids must be unique");
 	for (const row of rows) {
 		assert.equal(row.indent, 4, `row ${row.id} (line ${row.line}) must be a top-level row, not a child of another row`);
@@ -57,12 +57,12 @@ test("no row is a cordis:group", () => {
 	}
 });
 
-test("the carrier row and the four feature rows name this package", () => {
+test("the carrier row and the six feature rows name this package", () => {
 	const names = new Map(
 		rows.map((row) => [row.id, /name:\s*['"]?([^'"\s]+)['"]?\s*$/mu.exec(row.body.join("\n"))?.[1]]),
 	);
 	assert.equal(names.get("dsh-hiss-plugins"), manifest.name, "the carrier row bears the package's own name");
-	for (const feature of ["colgrep", "codegraph", "project-mcp", "gitbash"]) {
+	for (const feature of ["colgrep", "codegraph", "project-mcp", "gitbash", "superpowers", "ponytail"]) {
 		assert.equal(
 			names.get(`dsh-hiss-plugins-${feature}`),
 			`${manifest.name}/${feature}`,

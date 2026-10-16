@@ -1,7 +1,7 @@
 {
 	"meta": {
 		"title": "dsh-hiss-plugins",
-		"description": "一个 DeepSeek Harness 组合包，携带 colgrep、codegraph、project-mcp、git-bash 四个可独立开关的插件，并在插件页提供管理标签。"
+		"description": "一个 DeepSeek Harness 组合包，携带 colgrep、codegraph、project-mcp、git-bash、superpowers、ponytail 六个可独立开关的插件，并在插件页提供管理标签。"
 	},
 	"loading": "正在读取插件…",
 	"error": "暂时无法读取插件：{error}",
@@ -18,5 +18,7 @@
 	"featureColgrepDescription": "语义代码检索工具",
 	"featureCodegraphDescription": "代码图 MCP 工具",
 	"featureProjectMcpDescription": "按会话挂载项目 .mcp.json",
-	"featureGitbashDescription": "Windows 上的 Git Bash shell"
+	"featureGitbashDescription": "Windows 上的 Git Bash shell",
+	"featureSuperpowersDescription": "superpowers 技能常驻引导（任何回复前先检查并加载技能）",
+	"featurePonytailDescription": "ponytail 采纳提示与 /ponytail 等级切换"
 }

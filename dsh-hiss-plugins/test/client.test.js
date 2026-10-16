@@ -14,8 +14,8 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ID = "dsh-hiss-plugins";
 /** Dictionary namespace the tab registers and binds. */
 const NS = "hissPlugins";
-/** The four feature rows the tab manages, in the order it lists them. */
-const FEATURE_KEYS = ["colgrep", "codegraph", "project-mcp", "gitbash"];
+/** The six feature rows the tab manages, in the order it lists them. */
+const FEATURE_KEYS = ["colgrep", "codegraph", "project-mcp", "gitbash", "superpowers", "ponytail"];
 /** Refusal codes the page explains in its own words. */
 const READ_ONLY_CODES = ["management-required", "unaddressable"];
 
@@ -56,17 +56,21 @@ const ROWS = [
 	{ entryId: "core-tools", moduleName: "@deepseek-ai/dsh-tools", enabled: true, fiberPhase: "active", patchId: "core-tools" },
 	{ entryId: "hiss-plugins", moduleName: PACKAGE_ID, enabled: true, fiberPhase: "active", patchId: "dsh-hiss-plugins" },
 	{ entryId: "hiss-gitbash", moduleName: `${PACKAGE_ID}/gitbash`, enabled: false, fiberPhase: null, patchId: "dsh-hiss-plugins-gitbash" },
+	{ entryId: "hiss-superpowers", moduleName: `${PACKAGE_ID}/superpowers`, enabled: true, fiberPhase: "active", patchId: "dsh-hiss-plugins-superpowers" },
 	{ entryId: "hiss-colgrep", moduleName: `${PACKAGE_ID}/colgrep`, enabled: true, fiberPhase: "active", patchId: "dsh-hiss-plugins-colgrep" },
 	{ entryId: "hiss-project-mcp", moduleName: `${PACKAGE_ID}/project-mcp`, enabled: true, fiberPhase: "active", readOnlyReason: "unaddressable" },
 	{ entryId: "hiss-codegraph", moduleName: `${PACKAGE_ID}/codegraph`, enabled: false, fiberPhase: "pending", patchId: "dsh-hiss-plugins-codegraph" },
+	{ entryId: "hiss-ponytail", moduleName: `${PACKAGE_ID}/ponytail`, enabled: false, fiberPhase: "pending", patchId: "dsh-hiss-plugins-ponytail" },
 ];
 
-/** What those rows must become: this package's four features, in the tab's fixed order. */
+/** What those rows must become: this package's six features, in the tab's fixed order. */
 const MAPPED = [
 	{ entryId: "hiss-colgrep", key: "colgrep", enabled: true, toggleable: true, reason: undefined },
 	{ entryId: "hiss-codegraph", key: "codegraph", enabled: false, toggleable: true, reason: undefined },
 	{ entryId: "hiss-project-mcp", key: "project-mcp", enabled: true, toggleable: false, reason: "unaddressable" },
 	{ entryId: "hiss-gitbash", key: "gitbash", enabled: false, toggleable: true, reason: undefined },
+	{ entryId: "hiss-superpowers", key: "superpowers", enabled: true, toggleable: true, reason: undefined },
+	{ entryId: "hiss-ponytail", key: "ponytail", enabled: false, toggleable: true, reason: undefined },
 ];
 
 /** A successful read answer. */
@@ -240,7 +244,7 @@ test("apply registers the dictionaries and one plugins.tab entry", () => {
 	assert.equal(typeof component, "function");
 });
 
-test("the inject face exposes the four feature keys in the tab's order", () => {
+test("the inject face exposes the six feature keys in the tab's order", () => {
 	const { calls } = applyBundle();
 	const face = faceOf(calls);
 	assert.deepEqual(face.features, FEATURE_KEYS);
@@ -312,11 +316,11 @@ test("the tab renders one labelled switch per feature once the list arrives", as
 	const tree = await tab.settle();
 	const inputs = flatten(tree).filter((node) => node.type === "input");
 	assert.deepEqual(inputs.map((node) => node.props["aria-label"]), FEATURE_KEYS.map((key) => `Toggle ${key}`));
-	assert.deepEqual(inputs.map((node) => node.props.type), ["checkbox", "checkbox", "checkbox", "checkbox"]);
-	assert.deepEqual(inputs.map((node) => node.props.checked), [true, false, true, false]);
-	assert.deepEqual(inputs.map((node) => node.props.disabled), [false, false, true, false]);
+	assert.deepEqual(inputs.map((node) => node.props.type), ["checkbox", "checkbox", "checkbox", "checkbox", "checkbox", "checkbox"]);
+	assert.deepEqual(inputs.map((node) => node.props.checked), [true, false, true, false, true, false]);
+	assert.deepEqual(inputs.map((node) => node.props.disabled), [false, false, true, false, false, false]);
 	const text = textOf(tree);
-	for (const copy of ["semantic code search tool", "CodeGraph MCP tools", "mounts the project's .mcp.json per session", "Git Bash shell on Windows"]) {
+	for (const copy of ["semantic code search tool", "CodeGraph MCP tools", "mounts the project's .mcp.json per session", "Git Bash shell on Windows", "always-on superpowers skill mandate", "ponytail adoption hint and /ponytail level switching"]) {
 		assert.ok(text.includes(copy), `the card copy ${copy} is missing`);
 	}
 	assert.ok(text.includes("Enabled"));
@@ -333,6 +337,8 @@ test("the Chinese dictionary resolves the tab copy too", async () => {
 	assert.ok(text.includes("代码图 MCP 工具"));
 	assert.ok(text.includes("按会话挂载项目 .mcp.json"));
 	assert.ok(text.includes("Windows 上的 Git Bash shell"));
+	assert.ok(text.includes("superpowers 技能常驻引导（任何回复前先检查并加载技能）"));
+	assert.ok(text.includes("ponytail 采纳提示与 /ponytail 等级切换"));
 });
 
 test("the tab shows the loading line until the manager answers", async () => {
@@ -397,7 +403,7 @@ test("a failed read shows the diagnostic and a retry that re-reads", async () =>
 	await retry.props.onClick();
 	const recovered = await tab.settle();
 	assert.equal(calls.listed, 2);
-	assert.equal(flatten(recovered).filter((node) => node.type === "input").length, 4);
+	assert.equal(flatten(recovered).filter((node) => node.type === "input").length, 6);
 });
 
 test("the inlined dictionaries stay in sync with the locale JSON files", () => {

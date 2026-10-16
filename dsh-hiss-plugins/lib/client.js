@@ -32,6 +32,8 @@ window.__ModuleLoader__.load({
 			{ key: "codegraph", moduleName: `${PACKAGE_ID}/codegraph`, description: "featureCodegraphDescription" },
 			{ key: "project-mcp", moduleName: `${PACKAGE_ID}/project-mcp`, description: "featureProjectMcpDescription" },
 			{ key: "gitbash", moduleName: `${PACKAGE_ID}/gitbash`, description: "featureGitbashDescription" },
+			{ key: "superpowers", moduleName: `${PACKAGE_ID}/superpowers`, description: "featureSuperpowersDescription" },
+			{ key: "ponytail", moduleName: `${PACKAGE_ID}/ponytail`, description: "featurePonytailDescription" },
 		];
 		/** The same features keyed by the name a card shows. */
 		const FEATURE_BY_KEY = new Map(FEATURES.map((feature) => [feature.key, feature]));
@@ -71,6 +73,8 @@ window.__ModuleLoader__.load({
 			featureCodegraphDescription: "代码图 MCP 工具",
 			featureProjectMcpDescription: "按会话挂载项目 .mcp.json",
 			featureGitbashDescription: "Windows 上的 Git Bash shell",
+			featureSuperpowersDescription: "superpowers 技能常驻引导（任何回复前先检查并加载技能）",
+			featurePonytailDescription: "ponytail 采纳提示与 /ponytail 等级切换",
 		};
 		/** English dictionary checked against the Chinese key set. */
 		const en = {
@@ -90,6 +94,8 @@ window.__ModuleLoader__.load({
 			featureCodegraphDescription: "CodeGraph MCP tools",
 			featureProjectMcpDescription: "mounts the project's .mcp.json per session",
 			featureGitbashDescription: "Git Bash shell on Windows",
+			featureSuperpowersDescription: "always-on superpowers skill mandate",
+			featurePonytailDescription: "ponytail adoption hint and /ponytail level switching",
 		};
 
 		/** Read one thrown value as text. */

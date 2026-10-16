@@ -1,7 +1,7 @@
 {
 	"meta": {
 		"title": "dsh-hiss-plugins",
-		"description": "One DeepSeek Harness bundle carrying four switchable plugins — colgrep, codegraph, project-mcp and git-bash — managed from a tab in the Plugins page."
+		"description": "One DeepSeek Harness bundle carrying six switchable plugins — colgrep, codegraph, project-mcp, git-bash, superpowers and ponytail — managed from a tab in the Plugins page."
 	},
 	"loading": "Reading plugins…",
 	"error": "Plugins are unavailable: {error}",
@@ -18,5 +18,7 @@
 	"featureColgrepDescription": "semantic code search tool",
 	"featureCodegraphDescription": "CodeGraph MCP tools",
 	"featureProjectMcpDescription": "mounts the project's .mcp.json per session",
-	"featureGitbashDescription": "Git Bash shell on Windows"
+	"featureGitbashDescription": "Git Bash shell on Windows",
+	"featureSuperpowersDescription": "always-on superpowers skill mandate",
+	"featurePonytailDescription": "ponytail adoption hint and /ponytail level switching"
 }

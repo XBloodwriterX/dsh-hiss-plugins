@@ -1,7 +1,7 @@
 {
 	"name": "dsh-hiss-plugins",
-	"version": "1.0.0",
-	"description": "dsh-hiss-plugins — one DeepSeek Harness bundle carrying four independently switchable plugins (colgrep, codegraph, project-mcp, git-bash) plus a management tab in the Plugins page.",
+	"version": "1.1.0",
+	"description": "dsh-hiss-plugins — one DeepSeek Harness bundle carrying six independently switchable plugins (colgrep, codegraph, project-mcp, git-bash, superpowers, ponytail) plus a management tab in the Plugins page.",
 	"keywords": [
 		"dsh",
 		"deepseek-harness",
@@ -10,7 +10,9 @@
 		"codegraph",
 		"mcp",
 		"git-bash",
-		"semantic-search"
+		"semantic-search",
+		"superpowers",
+		"ponytail"
 	],
 	"license": "MIT",
 	"author": {
@@ -33,6 +35,8 @@
 		"./codegraph": "./lib/codegraph/index.js",
 		"./project-mcp": "./lib/project-mcp/index.js",
 		"./gitbash": "./lib/gitbash/index.js",
+		"./superpowers": "./lib/superpowers/index.js",
+		"./ponytail": "./lib/ponytail/index.js",
 		"./client": "./lib/client.js",
 		"./locale/*.json": "./locale/*.json",
 		"./package.json": "./package.json"
@@ -46,13 +50,17 @@
 	],
 	"peerDependencies": {
 		"@deepseek-ai/dsh-bash-sandbox": "^0.2.1-alpha.4",
+		"@deepseek-ai/dsh-llm": "^0.2.1-alpha.4",
 		"@deepseek-ai/dsh-mcp-client": "^0.2.1-alpha.4",
+		"@deepseek-ai/dsh-skill": "^0.2.1-alpha.4",
 		"@deepseek-ai/dsh-tool-bash": "^0.2.1-alpha.4",
 		"@deepseek-ai/dsh-tools": "^0.2.1-alpha.4"
 	},
 	"devDependencies": {
 		"@deepseek-ai/dsh-bash-sandbox": "0.2.1-alpha.4",
+		"@deepseek-ai/dsh-llm": "0.2.1-alpha.4",
 		"@deepseek-ai/dsh-mcp-client": "0.2.1-alpha.4",
+		"@deepseek-ai/dsh-skill": "0.2.1-alpha.4",
 		"@deepseek-ai/dsh-tool-bash": "0.2.1-alpha.4",
 		"@deepseek-ai/dsh-tools": "0.2.1-alpha.4"
 	},
