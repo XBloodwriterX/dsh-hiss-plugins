@@ -1,6 +1,6 @@
 {
-  "name": "dsh-plugins",
-  "version": "0.0.0",
+  "name": "dsh-hiss-plugins",
+  "version": "0.1.1",
   "private": true,
   "description": "DeepSeek Harness (dsh) 插件集合仓库。",
   "scripts": {
