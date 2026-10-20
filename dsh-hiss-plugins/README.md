@@ -1,12 +1,12 @@
 # dsh-hiss-plugins
 
-一个 DeepSeek Harness **bundle 插件**，把六个功能装在一个包里：**colgrep**（语义代码检索）、**codegraph**（代码图 MCP）、**project-mcp**（项目 `.mcp.json`）、**git-bash**（Windows 上的 Git Bash shell）、**superpowers**（superpowers 技能常驻引导）、**ponytail**（ponytail 采纳提示与 `/ponytail` 等级切换）。六个功能各占一条顶层行，可以在 **Plugins 页**里单独开关；包还带一个管理标签，就挂在那个页面上。
+一个 DeepSeek Harness **bundle 插件**，把七个功能装在一个包里：**colgrep**（语义代码检索）、**codegraph**（代码图 MCP）、**project-mcp**（项目 `.mcp.json`）、**git-bash**（Windows 上的 Git Bash shell）、**superpowers**（superpowers 技能常驻引导）、**ponytail**（ponytail 采纳提示与 `/ponytail` 等级切换）、**init**（读项目生成 `AGENTS.md`）。七个功能各占一条顶层行，可以在 **Plugins 页**里单独开关；包还带一个管理标签，就挂在那个页面上。
 
 安装后对 `web`、`headless` 等任意 profile 的**所有 preset、所有会话**生效。
 
-## 七条行与六个开关
+## 八条行与七个开关
 
-`cordis.patch.yml` 只做一件事：`insert` 七条**顶层行**。宿主用 `name`（模块说明符）解析模块，用 `id` 记住开关状态。
+`cordis.patch.yml` 只做一件事：`insert` 八条**顶层行**。宿主用 `name`（模块说明符）解析模块，用 `id` 记住开关状态。
 
 | 行 id | 模块 | 作用 | 默认 |
 |---|---|---|---|
@@ -17,8 +17,9 @@
 | `dsh-hiss-plugins-gitbash` | `dsh-hiss-plugins/gitbash` | Windows 上接入 Git Bash：提供 `ctx.shell` + 宿主 `bash` 工具 | 非 Windows 关 |
 | `dsh-hiss-plugins-superpowers` | `dsh-hiss-plugins/superpowers` | superpowers 技能常驻引导：任何回复前先检查有没有适用的技能，有就先加载（技能集本身由 DSH 原生发现） | 开 |
 | `dsh-hiss-plugins-ponytail` | `dsh-hiss-plugins/ponytail` | ponytail 采纳提示（随等级变化）+ 宿主 `/ponytail` 等级命令 | 开 |
+| `dsh-hiss-plugins-init` | `dsh-hiss-plugins/init` | 宿主 `/init` 命令：读项目、生成/更新 `AGENTS.md` | 开 |
 
-**六条功能行就是 Plugins 页里那六个开关。** 载体行不在标签的开关列表里 —— 它是空的 host 半，但只有它在，浏览器半才会被送进页面；关掉它，管理标签本身就没了。
+**七条功能行就是 Plugins 页里那七个开关。** 载体行不在标签的开关列表里 —— 它是空的 host 半，但只有它在，浏览器半才会被送进页面；关掉它，管理标签本身就没了。
 
 为什么必须是顶层行：插件管理器只为「组合后的 patch 里存在同 `id`、同 `name`，且挂载后父 entry 就是 profile 的 `include`」的行持久化开关。包在 `cordis:group` 里的子行在 `listPlugins()` 里被判为 `unaddressable`，**永远不会有开关**。所以这里没有组：git-bash 行把 realm 隔离写在自己身上（见下）。
 
@@ -30,7 +31,7 @@
 - 宿主把 `{ id: <行 id>, disabled: <bool> }` 覆盖写进 **profile 自己的** `cordis.patch.yml`（保留注释、原子写）—— 只影响这个 profile，不动包内的 `cordis.patch.yml`，所以升级/重装不会丢开关。
 - **带 HMR 的 profile 立即生效**（远程结果 `application: "applied"`）；**没有 HMR 的 profile 返回 `application: "restart-required"`（`restartReason: "no-hmr"`），重启 dsh 才生效**。
 - 行不可开关时，`listPlugins()` 会给出 `readOnlyReason`：`unaddressable`（不是顶层行 / 名字对不上）或 `management-required`（插件管理器自己的行或受保护模块）。
-- 关掉一条功能行只是让那条行不激活：另外五条行不受影响，管理标签仍在（载体行开着）。
+- 关掉一条功能行只是让那条行不激活：另外六条行不受影响，管理标签仍在（载体行开着）。
 
 ## 安装 / 卸载
 
@@ -39,7 +40,7 @@ dsh plugin --profile web add dsh-hiss-plugins
 # 或从本仓 checkout：dsh plugin --profile web add link:./dsh-hiss-plugins
 ```
 
-把 `web` 换成你的 profile 名（例如 `headless`），然后**重启 dsh**。`dsh plugin` 会把本包装进 profile 的 `node_modules`；因为 `package.json` 声明了 `dsh.bundle.patch`，profile 的 bundle 列表会自动追加 `dsh-hiss-plugins`，重启后七条行一起激活。
+把 `web` 换成你的 profile 名（例如 `headless`），然后**重启 dsh**。`dsh plugin` 会把本包装进 profile 的 `node_modules`；因为 `package.json` 声明了 `dsh.bundle.patch`，profile 的 bundle 列表会自动追加 `dsh-hiss-plugins`，重启后八条行一起激活。
 
 ```powershell
 dsh plugin --profile web remove dsh-hiss-plugins
@@ -49,7 +50,7 @@ dsh plugin --profile web remove dsh-hiss-plugins
 
 ## 管理标签（浏览器半）
 
-Plugins 页（侧边栏 **插件**）里多出一个 `dsh-hiss-plugins` 标签，列出上面六条功能行与它们的开关。
+Plugins 页（侧边栏 **插件**）里多出一个 `dsh-hiss-plugins` 标签，列出上面七条功能行与它们的开关。
 
 - 浏览器半是 **`lib/client.js`** —— 手写的 lazy-CJS bundle，没有构建步骤：`window.__ModuleLoader__.load({ id: "dsh-hiss-plugins", factory })` 只注册工厂，模块体（slot 注册、locale 字典）在首次被 require 时执行。`id` 必须逐字等于包名（客户端图里的行 id 就是包名）。
 - `package.json` 里 `dsh.client.platform = "web"`、`exports["./client"]` 指向 `lib/client.js`；客户端模块系统按 Loader 行扫描，**只有本包有行挂载，这个文件才会被送进浏览器**。
@@ -306,6 +307,22 @@ colgrep command:"init" / command:"status" / command:"clear"
 
 验证：`/ponytail ultra` 后给一个编码任务，模型应加载 `ponytail` 技能并按 ultra 档执行；`/ponytail off` 后该提示词段变空。
 
+## 功能：init（读项目生成 AGENTS.md）
+
+注册宿主命令 **`/init`**：把一条固定的、面向仓库调研的指令作为持久 user 消息交给模型，让智能体先读项目、再在项目根写 `AGENTS.md`。插件本身不读文件、不生成内容 —— 阅读、检索、写入都走智能体已有的工具，指令的质量就是功能的全部。
+
+- **目标位置**：从会话工作目录向上找最近的、含 `.git` 的祖先目录作为项目根，写 `<项目根>/AGENTS.md`；找不到 `.git` 时用工作目录本身。
+- **已有文件按增量合并**：先读 `AGENTS.md`，保留仍然正确的内容与维护者手写的规则，只删除错误或重复的部分并说明删了什么。没有 `AGENTS.md` 但有 `CLAUDE.md` / `AGENT.md` 时，读它作为上下文、新建 `AGENTS.md`，不改写旧文件。
+- **命令必须有证据**：只允许记录 manifest、脚本、Makefile、CI 文件或文档里真实存在的命令；提示词明确禁止编造命令/路径/脚本名/版本，也禁止为了“发现”事实去跑安装、构建、测试、网络或破坏性命令。
+- **结构**：项目概览、安装/首次运行、构建/测试/lint（含单测跑法）、架构地图、仓库特有约定、测试要求、Git/PR 规则、安全与陷阱；没有内容的段直接省略。目标 80–150 行，约 200 行是硬上限；用仓库现有文档的语言写；不写泛泛而谈的建议、不抄 README、不含密钥或个人路径。
+- **完成前自检**：重新从磁盘读文件，逐条核对命令、路径、环境变量和配置名；确认文件回答了“怎么装、怎么验、核心代码在哪、什么不能碰”，并报告无法确认或刻意省略的内容。
+- 命令**不接受参数**（`/init foo` 返回 `Usage: /init (no arguments)`），也不提交任何改动。
+- 提示词在 `lib/init/prompt.js`（纯逻辑、无宿主导入），命令接缝在 `lib/init/index.js`（`commands` + `workingDirectory`，经 `invocation.agent.followup(createUserMessage(...))` 注入）。
+
+前置要求：无 —— 只用宿主已有的 `commands`、`workingDirectory` 服务，以及 `@deepseek-ai/dsh-llm` 的 `createUserMessage`。
+
+验证：在任意项目里执行 `/init`，模型应开始读仓库并写出 `AGENTS.md`；下一个会话由 DSH 的 `dsh-agent-instructions` 自动加载它。
+
 ## 开发与测试
 
 ```powershell
@@ -316,8 +333,8 @@ pnpm test      # 在包目录内也可：node --test-isolation=none --test
 结构：
 
 ```text
-package.json          七条行的 bundle 声明（dsh.bundle.patch）+ 浏览器半声明（dsh.client）+ exports/files
-cordis.patch.yml      七条顶层行（载体 + 六个功能）
+package.json          八条行的 bundle 声明（dsh.bundle.patch）+ 浏览器半声明（dsh.client）+ exports/files
+cordis.patch.yml      八条顶层行（载体 + 七个功能）
 lib/index.js          载体行：空 host 半
 lib/client.js         浏览器半：Plugins 页管理标签（手写 lazy-CJS，无构建步骤）
 lib/colgrep/          colgrep 工具
@@ -326,17 +343,18 @@ lib/project-mcp/      lib/config.js 纯逻辑（无宿主依赖）+ lib/index.js
 lib/gitbash/          lib/resolve.js 纯逻辑 + lib/gitbash-executor.js 执行器 + lib/index.js 组合根
 lib/superpowers/      常驻引导提示词段（只注册 systemPrompt 段，不导入宿主包）
 lib/ponytail/         lib/mode.js 纯逻辑（等级解析与默认值）+ lib/index.js 提示词段与 /ponytail 命令
+lib/init/             lib/prompt.js 纯逻辑（/init 指令正文）+ lib/index.js 命令接缝
 locale/*.json         管理标签的文案字典
-test/                 node:test：<feature>/ 六个目录 + manifest / patch / client 三个契约测试
+test/                 node:test：<feature>/ 七个目录 + manifest / patch / client 三个契约测试
 ```
 
-`lib/project-mcp/config.js`、`lib/gitbash/resolve.js` 与 `lib/ponytail/mode.js` 刻意不导入任何宿主包，所以解析与映射分支可以在没有 dsh 安装的环境里完整跑测试；宿主接缝由各功能的 `index.js` 承担。浏览器半用 fake `window.__ModuleLoader__` + fake `ctx` 测注册与远程调用，不启动浏览器。测试全部离线，不联网、不依赖 `colgrep`/`codegraph` CLI。
+`lib/project-mcp/config.js`、`lib/gitbash/resolve.js`、`lib/ponytail/mode.js` 与 `lib/init/prompt.js` 刻意不导入任何宿主包，所以这些纯逻辑分支可以在没有 dsh 安装的环境里完整跑测试；宿主接缝由各功能的 `index.js` 承担。浏览器半用 fake `window.__ModuleLoader__` + fake `ctx` 测注册与远程调用，不启动浏览器。测试全部离线，不联网、不依赖 `colgrep`/`codegraph` CLI。
 
 ## 发布（给维护者）
 
 ```powershell
-git tag dsh-hiss-plugins@1.1.0        # 必须与本目录 package.json 的 version 逐字一致
-git push origin dsh-hiss-plugins@1.1.0
+git tag dsh-hiss-plugins@1.2.0        # 必须与本目录 package.json 的 version 逐字一致
+git push origin dsh-hiss-plugins@1.2.0
 ```
 
 CI（`.github/workflows/publish.yml`，Windows runner）解析 tag、跑全量测试，再用 **npm trusted publishing（OIDC，无需任何 token）** 发布；包内 `prepublishOnly` 会再跑一次 `npm test`。手工发布：`npm publish`（`publishConfig.access` 已设为 public），发版前先 `node ../scripts/smoke-profile.mjs` 走一遍真实安装 + 真启动。发布新版本前记得递增 `package.json` 的 `version`。
