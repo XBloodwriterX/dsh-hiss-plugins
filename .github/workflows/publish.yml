@@ -23,13 +23,13 @@ jobs:
       contents: read
       id-token: write # npm trusted publishing（OIDC），不需要任何长期 token
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 12.3.4 # 与 pnpm-lock.yaml 的生成版本一致
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24 # 自带 npm >= 11.5.1，trusted publishing 的最低要求
           registry-url: https://registry.npmjs.org
