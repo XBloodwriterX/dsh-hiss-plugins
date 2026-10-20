@@ -3,6 +3,15 @@
 > pnpm workspace 单仓：只发布一个包 `dsh-hiss-plugins/`（npm `dsh-hiss-plugins`），把七个功能打成一个 **DSH（DeepSeek Harness）bundle 插件**。
 > 最高优先级：**不要破坏已发布的插件契约** —— `package.json` 的 `dsh`/`exports`/`files`、`cordis.patch.yml` 的八行、`lib/*/index.js` 与 `lib/client.js` 的导出形状。
 
+## 安装与检查（先看这里）
+
+- 工具链：Node ≥ 20（CI 用 24）、pnpm 12.3.4（`pnpm-lock.yaml` 的生成版本，CI 同版本）。
+- 安装：在仓库根目录跑 `pnpm install`（普通终端；沙箱内的 reparse-point 限制见 §6）。
+- 全量检查：`pnpm test`（根脚本 = `pnpm -r test && node --test scripts/resolve-tag.test.mjs`，即包内全部 `node:test` 文件 + tag 解析器测试）。测试离线，不联网、不依赖 `colgrep` / `codegraph` CLI；本仓没有 lint / format / typecheck 脚本，别臆造。
+- 单包 / 单文件：`cd dsh-hiss-plugins && node --test`；单个文件如 `node --test test/gitbash/resolve.test.js`。
+- 沙箱内 `pnpm test` 若报 `spawn EPERM`：改在包目录跑 `node --test-isolation=none --test`（环境限制，不是测试失败；见 §6）。
+- 真实安装 + 真启动冒烟（需联网、`pnpm`、PATH 上的 `dsh`）：`pnpm smoke`（即 `node scripts/smoke-profile.mjs`），不属于 `pnpm test`。
+
 ## 1. 仓库地图
 
 | 路径 | 提供 |
@@ -17,6 +26,7 @@
 | `dsh-hiss-plugins/lib/ponytail/` | ponytail 采纳提示段 + 宿主 `/ponytail` 等级命令；`lib/ponytail/mode.js` 管等级语法、默认值解析与按 agent 的等级表 |
 | `dsh-hiss-plugins/lib/init/` | 宿主 `/init` 命令：`lib/init/prompt.js` 是指令正文（纯逻辑），`lib/init/index.js` 把指令经 `agent.followup` 交给模型，读项目并写 `AGENTS.md` |
 | `dsh-hiss-plugins/lib/client.js` | 浏览器半（手写 lazy-CJS）：向 Plugins 页的 `plugins.tab` 注册管理标签 |
+| `dsh-hiss-plugins/locale/` | 管理标签的中 / 英文字典；`meta` 是 Plugins 页显示的包信息 |
 | `dsh-hiss-plugins/test/` | node:test 单测：七个 `<feature>/` 目录 + `manifest.test.js` + `patch.test.js` + `client.test.js` |
 
 功能与宿主 peer 的对应：`colgrep` → `dsh-tools`；`codegraph`、`project-mcp` → `dsh-mcp-client`；`gitbash` → `dsh-bash-sandbox` + `dsh-tool-bash`；`ponytail` → `dsh-llm` + `dsh-skill`（`createUserMessage` 与 `renderSkillContent`）；`init` → `dsh-llm`（`createUserMessage`），另用 `commands` / `workingDirectory` 两个 ctx 服务；`superpowers` 只用 ctx 服务、不导入宿主包。这六个 `@deepseek-ai/*` 都是**宿主提供的 peer**，见 §3.4。
@@ -52,32 +62,9 @@ profile 的每个 bundle 各贡献一层 patch，本包的 `cordis.patch.yml` �
 
 ### 2.2 浏览器半（客户端契约）
 
-```json
-"dsh": {
-  "bundle": { "patch": "./cordis.patch.yml" },
-  "client": { "platform": "web", "inject": ["@deepseek-ai/dsh-api-remotes", "@deepseek-ai/dsh-client-modules"] }
-},
-"exports": { "./client": "./lib/client.js" }
-```
-
-- 客户端模块系统按 **Loader 行**扫描：只有某条行已挂载的包才会被读 `dsh.client`，也只有 `platform: "web"` 且 `exports["./client"]` 指向真实文件的包才会被送进浏览器。这就是载体行存在的唯一理由 —— 没有行，`lib/client.js` 不会被送出。
+- `package.json` 必须同时声明：`dsh.bundle.patch: "./cordis.patch.yml"`、`dsh.client: { platform: "web", inject: ["@deepseek-ai/dsh-api-remotes", "@deepseek-ai/dsh-client-modules"] }`、`exports["./client"]: "./lib/client.js"`。客户端模块系统按 **Loader 行**扫描：只有某条行已挂载的包才会被读 `dsh.client`，也只有 `platform: "web"` 且 `exports["./client"]` 指向真实文件的包才会被送进浏览器 —— 这就是载体行存在的唯一理由。
 - `dsh.client.inject` 是**包名**列表（其它浏览器半的图依赖），不是 npm 依赖，不要写进 `dependencies`。
-- `lib/client.js` 是**手写 lazy-CJS bundle，无构建步骤**：执行脚本只注册工厂，模块体（含一切注册副作用）在首次被 require/import 时执行：
-
-  ```js
-  window.__ModuleLoader__.load({
-  	id: "dsh-hiss-plugins", // 必须逐字等于包名：客户端图里的行 id 就是包名
-  	factory: (require) => {
-  		var module = { exports: {} };
-  		var exports = module.exports;
-  		// ……模块体与注册……
-  		exports.apply = apply;
-  		exports.inject = inject;
-  		return module.exports;
-  	},
-  });
-  ```
-
+- `lib/client.js` 是**手写 lazy-CJS bundle，无构建步骤**：执行脚本只注册工厂（`window.__ModuleLoader__.load({ id: "dsh-hiss-plugins", factory: (require) => { ...; exports.apply = apply; exports.inject = inject; return module.exports; } })`），模块体（含一切注册副作用）在首次被 require/import 时执行；`id` 必须逐字等于包名（客户端图里的行 id 就是包名）。
 - `exports.inject` 写的是**浏览器侧服务名**（`slots`、`locale`、`remote`、`remote.<命名空间>`），少列一个 → 该浏览器插件静默不激活。它与 `dsh.client.inject`（包名）不是一回事。
 - 远程调用走 `ctx.remote.<命名空间>.<方法>`，命名空间就是 host 侧服务名。管理标签用 `await ctx.remote.pluginManager.listPlugins()` 取行、`await ctx.remote.pluginManager.setPluginEnabled(entryId, enabled)` 写开关。
 - 标签注册进 Plugins 页（`dsh-client-ui-plugin-manager`）声明的 `plugins.tab` list slot：`ctx.slots.inject("plugins.tab", () => ctx.slots.register({ name: "plugins.tab", id, order, label, locale }, 渲染函数))`，条目按 `order` 排在该页自己的「已安装」标签之后。
@@ -108,7 +95,7 @@ profile 的每个 bundle 各贡献一层 patch，本包的 `cordis.patch.yml` �
 
 - ESM、import 带显式 `.js` 后缀、Node ≥ 20；**纯 JS + JSDoc，无 TypeScript、无构建步骤**；**缩进用 TAB**；双引号、分号；具名导出；私有字段 `#`；注释写 why 不写 what。
 - 测试用 Node 内置 `node:test` + `node:assert/strict`，零依赖。**不启动真实 DSH**：手写 fake `ctx` 捕获注册调用，`mkdtempSync` 临时目录做 fixture。覆盖导出形状、注册次数、argv 组装、渲染函数与**错误分支**。浏览器半同理：`test/client.test.js` 用 fake `window.__ModuleLoader__` + fake `ctx` 捕获 slot 注册与 remote 调用（成功 / 失败 / 需要重启三个分支），不启动浏览器。
-- 运行：`pnpm install` → `pnpm test`（根目录；`pnpm -r test` 加 `scripts/resolve-tag.test.mjs`）。**在 DSH 沙箱内 `pnpm test` 可能以 `spawn EPERM` 失败** —— 沙箱禁止带管道的子进程 stdio，而 `node --test` 要为每个测试文件 spawn 子进程；这是**环境限制，不是测试失败**，改在包目录内跑 `node --test-isolation=none --test`。基线以 **`pnpm test` 的输出**为准，本文件不写死数字。新增排除项要同步 `pnpm-workspace.yaml` 的 `minimumReleaseAgeExclude`（刚发布的预发布版会被 pnpm 的发布时长策略挡掉，报成 `ERR_PNPM_NO_MATCHING_VERSION`）—— 每加一代替换一次该代版本号，`dsh-*` 追加到已有的 `||` 列表里，而 `cordis` / `cordis-plugin-*` / `cosmokit` / `schemastery` 是**独立版本线**，只追加它们自己的版本号，别写成 `0.2.1-alpha.4`。
+- 命令见上面的「安装与检查」。基线以 **`pnpm test` 的输出**为准，本文件不写死数字。**在 DSH 沙箱内 `pnpm test` 可能以 `spawn EPERM` 失败** —— 沙箱禁止带管道的子进程 stdio，而 `node --test` 要为每个测试文件 spawn 子进程；这是**环境限制，不是测试失败**，改在包目录内跑 `node --test-isolation=none --test`。新增 / 换代时同步 `pnpm-workspace.yaml` 的 `minimumReleaseAgeExclude`（刚发布的预发布版会被 pnpm 的发布时长策略挡掉，报成 `ERR_PNPM_NO_MATCHING_VERSION`）：`dsh-*` 写该代精确版本；`cordis` / `cordis-plugin-*` / `cosmokit` / `schemastery` 若需要排除，用它们各自的版本号（**独立版本线**），别写成 `0.2.1-alpha.4`。`pnpm-workspace.yaml` 的 `packages:` 里那组带 `||` 的 `@deepseek-ai/*@版本` 条目不匹配任何 workspace 目录，别把新版本只加在那里。
 - **`lib/` 里凡是导入宿主包的模块，在沙箱内都跑不了测试**（见 §6 的 reparse point 条目）。要测的逻辑就放进不导入宿主包的模块：`lib/project-mcp/config.js`（`.mcp.json` 定位/解析/映射）、`lib/gitbash/resolve.js`（Git Bash 解析）、`lib/ponytail/mode.js`（ponytail 等级语法、默认值与按 agent 的等级表）与 `lib/init/prompt.js`（`/init` 指令正文与目标/章节常量）零宿主依赖、分支全覆盖地跑单测，`lib/*/index.js` 只承担宿主接缝。沙箱内需要真实依赖时，用 `npm install <pkg>` 在临时目录建一份真实目录布局再跑（`npm` 不走 pnpm 的符号链接农场）。
 - **覆写宿主接缝的模块，测试必须打到真实基类**：0.1.7 把执行器接缝从 `run`/`start`/`runArgv`/`startArgv` 改成 `execute`/`executeArgv`，覆写旧名字在 import 期**完全静默**，只在调用时表现为"跑错 shell"。`lib/gitbash/gitbash-executor.js` 覆写 `confine`/`executeArgv`/`execute`，`test/gitbash/` 因此既断言接缝名/参数个数，也用真实 `SandboxBashExecutor`（只假 `ctx.subprocess`）跑一遍完整调用链，把这三个接缝钉在当前运行时代次（`0.2.1-alpha.4`）上 —— 纯 fake 基类会把宿主的行为变成测试自己的假设。
 - 单元测试跑的是仓内 `devDependencies`，**看不到 profile 里的模块遮蔽**。真实安装 + 真启动的冒烟检查是唯一能抓到那一类的方式：`node scripts/smoke-profile.mjs`（需联网 + `pnpm` + PATH 上的 `dsh`，非 `pnpm test` 的一部分；它还会开一个真实会话，验证 project-mcp 在 `agent/created` 里挂载 `.mcp.json` 的那条接缝）。
@@ -116,7 +103,7 @@ profile 的每个 bundle 各贡献一层 patch，本包的 `cordis.patch.yml` �
 
 ## 5. 新增功能行
 
-- 加一个功能：`lib/<feature>/index.js`（导出 `name`/`inject`/`apply`）→ `package.json` 的 `exports` 加 `"./<feature>"` → `cordis.patch.yml` 加一条**顶层**行（`id: dsh-hiss-plugins-<feature>`，`name: dsh-hiss-plugins/<feature>`）→ 确认 `files` 白名单覆盖新文件 → 要在 Plugins 页可开关就把该行加进浏览器半的列表 → 写测试（含 `test/manifest.test.js` 里列出该功能用到的 `@deepseek-ai/*` 并按 §3.4 声明、`test/patch.test.js` 里守住顶层形状）→ `dsh plugin --profile <p> add link:./dsh-hiss-plugins` 本地验证 → 发版前 `node scripts/smoke-profile.mjs` 走一遍真实安装 + 真启动。
+- 加一个功能：`lib/<feature>/index.js`（导出 `name`/`inject`/`apply`）→ `package.json` 的 `exports` 加 `"./<feature>"` → `cordis.patch.yml` 加一条**顶层**行（`id: dsh-hiss-plugins-<feature>`，`name: dsh-hiss-plugins/<feature>`）→ 确认 `files` 白名单覆盖新文件 → 要在 Plugins 页可开关就把该行加进 `lib/client.js` 的 `FEATURES`，并在 `locale/zh.json` / `locale/en.json` 补文案（`test/client.test.js` 会断言 feature 列表与中 / 英字典，新增 feature 记得同步该测试）→ 写测试（含 `test/manifest.test.js` 里列出该功能用到的 `@deepseek-ai/*` 并按 §3.4 声明、`test/patch.test.js` 里守住顶层形状）→ `dsh plugin --profile <p> add link:./dsh-hiss-plugins` 本地验证 → 发版前 `node scripts/smoke-profile.mjs` 走一遍真实安装 + 真启动。
 - 提交用 **Conventional Commits**（英文）：`feat:`/`fix:`/`docs:`/`refactor:`/`chore:`/`test:`；一个提交只做一件事。
 
 ## 6. 常见陷阱
@@ -140,7 +127,8 @@ git tag dsh-hiss-plugins@1.2.0        # 必须与 dsh-hiss-plugins/package.json 
 git push origin dsh-hiss-plugins@1.2.0
 ```
 
-- 工作流在 **Windows runner** 上跑（git-bash 只在 Windows 上解析得出来，测试固件也按 Windows 路径语义断言；ubuntu 上这些断言不可能通过）：解析 tag → `pnpm install --frozen-lockfile` → `pnpm test` → 在 tag 指向的目录里 `npm publish`，用 **npm trusted publishing（OIDC，无需任何 token/secret）**。包内 `prepublishOnly` 还会再跑一次该包自己的测试。
+- 工作流在 **Windows runner** 上跑（git-bash 只在 Windows 上解析得出来，测试固件也按 Windows 路径语义断言；ubuntu 上这些断言不可能通过），CI 固定 pnpm 12.3.4 / Node 24：解析 tag → `pnpm install --frozen-lockfile` → `pnpm test` → registry 上没有该版本时，在 tag 指向的目录里 `npm publish`（**npm trusted publishing / OIDC，无需任何 token/secret**；包内 `prepublishOnly` 还会再跑一次该包自己的测试）。已发布的版本会跳过发布（幂等）。
+- tag 已存在但需要重跑：`gh workflow run publish.yml --ref <tag>`（`workflow_dispatch`）。
 - tag 名里没有的包不会被发布；tag 与 manifest 不一致、或目录不存在时，工作流在发布前就失败（可先本地验一遍：`node scripts/resolve-tag.mjs dsh-hiss-plugins@1.2.0`）。
 - **首次使用前**，在 npmjs.com 上为 `dsh-hiss-plugins` 配置一次 trusted publisher：Package → Settings → Trusted Publisher → GitHub Actions，填组织 `hilariouhiss`、仓库 `dsh-hiss-plugins`、workflow 文件名 `publish.yml`。配好之后 CI 不再需要 `NPM_TOKEN`。
 - 手工发布（不走 CI，需先 `npm login`）：`pnpm run publish:dsh-hiss-plugins`。
